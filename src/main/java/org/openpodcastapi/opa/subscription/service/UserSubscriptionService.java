@@ -58,6 +58,16 @@ public class UserSubscriptionService {
                 .map(userSubscriptionMapper::toDto);
     }
 
+    /// Gets all active subscriptions for the authenticated user
+    ///
+    /// @param userId the database ID of the authenticated user
+    /// @return a paginated set of [UserSubscriptionDto] objects
+    @Transactional(readOnly = true)
+    public Page<UserSubscriptionDto> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {
+        log.debug("Fetching all active subscriptions for {}", userId);
+        return userSubscriptionRepository.findAllByUserIdAndIsSubscribedTrue(userId, pageable).map(userSubscriptionMapper::toDto);
+    }
+
     /// Persists a new user subscription to the database
     /// If an existing entry is found for the user and subscription, the `isSubscribed` property is set to `true`
     ///
@@ -112,5 +122,19 @@ public class UserSubscriptionService {
 
         // Return the entire DTO of successes and failures
         return new BulkSubscriptionResponse(successes, failures);
+    }
+
+    /// Updates the status of a subscription for a given user
+    ///
+    /// @param feedUUID the UUID of the subscription feed
+    /// @param userId   the ID of the user
+    /// @return a [UserSubscriptionDto] containing the updated object
+    @Transactional
+    public UserSubscriptionDto unsubscribeUserFromFeed(UUID feedUUID, Long userId) {
+        UserSubscription subscription = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, feedUUID)
+                .orElseThrow(() -> new EntityNotFoundException("no subscription found"));
+
+        subscription.setIsSubscribed(false);
+        return userSubscriptionMapper.toDto(userSubscriptionRepository.save(subscription));
     }
 }

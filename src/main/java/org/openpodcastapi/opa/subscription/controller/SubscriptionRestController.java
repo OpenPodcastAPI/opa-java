@@ -28,13 +28,22 @@ public class SubscriptionRestController {
 
     /// Returns all subscriptions for a given user
     ///
-    /// @param user     the [CustomUserDetails] of the authenticated user
-    /// @param pageable the [Pageable] pagination object
+    /// @param user                the [CustomUserDetails] of the authenticated user
+    /// @param pageable            the [Pageable] pagination object
+    /// @param includeUnsubscribed whether to include unsubscribed feeds in the response
     /// @return a paginated list of subscriptions
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<SubscriptionPageDto> getAllSubscriptionsForUser(@AuthenticationPrincipal CustomUserDetails user, Pageable pageable) {
-        Page<UserSubscriptionDto> dto = service.getAllSubscriptionsForUser(user.id(), pageable);
+    public ResponseEntity<SubscriptionPageDto> getAllSubscriptionsForUser(@AuthenticationPrincipal CustomUserDetails user, Pageable pageable, @RequestParam(defaultValue = "false") boolean includeUnsubscribed) {
+        Page<UserSubscriptionDto> dto;
+
+        if (includeUnsubscribed) {
+            dto = service.getAllSubscriptionsForUser(user.id(), pageable);
+        } else {
+            dto = service.getAllActiveSubscriptionsForUser(user.id(), pageable);
+        }
+
+        log.debug("{}", dto);
 
         return new ResponseEntity<>(SubscriptionPageDto.fromPage(dto), HttpStatus.OK);
     }
@@ -43,7 +52,8 @@ public class SubscriptionRestController {
     ///
     /// @param uuid the UUID value to query for
     /// @return the subscription entity
-    /// @throws EntityNotFoundException if no entry is found
+    /// @throws EntityNotFoundException  if no entry is found
+    /// @throws IllegalArgumentException if the UUID is improperly formatted
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<UserSubscriptionDto> getSubscriptionByUuid(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) throws EntityNotFoundException {
@@ -55,6 +65,24 @@ public class SubscriptionRestController {
         UserSubscriptionDto dto = service.getUserSubscriptionBySubscriptionUuid(uuidValue, user.id());
 
         // Return the mapped subscription entry
+        return new ResponseEntity<>(dto, HttpStatus.OK);
+    }
+
+    /// Updates the subscription status of a subscription for a given user
+    ///
+    /// @param uuid the UUID of the subscription to update
+    /// @return the updated subscription entity
+    /// @throws EntityNotFoundException  if no entry is found
+    /// @throws IllegalArgumentException if the UUID is improperly formatted
+    @PostMapping("/{uuid}/unsubscribe")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<UserSubscriptionDto> unsubscribeUserFromFeed(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) {
+        // Attempt to validate the UUID value from the provided string
+        // If the value is invalid, the GlobalExceptionHandler will throw a 400.
+        UUID uuidValue = UUID.fromString(uuid);
+
+        UserSubscriptionDto dto = service.unsubscribeUserFromFeed(uuidValue, user.id());
+
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 

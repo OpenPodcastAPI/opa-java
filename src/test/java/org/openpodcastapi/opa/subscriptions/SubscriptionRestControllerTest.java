@@ -15,7 +15,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -28,8 +28,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
@@ -60,9 +59,9 @@ class SubscriptionRestControllerTest {
 
         UserSubscriptionDto sub1 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
         UserSubscriptionDto sub2 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), true);
+        Page<UserSubscriptionDto> page = new PageImpl<>(List.of(sub1, sub2));
 
-        Page<UserSubscriptionDto> page = new PageImpl<>(List.of(sub1, sub2), PageRequest.of(0, 2), 2);
-        when(subscriptionService.getAllSubscriptionsForUser(user.id(), PageRequest.of(0, 20)))
+        when(subscriptionService.getAllActiveSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
                 .thenReturn(page);
 
         mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/subscriptions")
@@ -76,7 +75,10 @@ class SubscriptionRestControllerTest {
                         preprocessResponse(prettyPrint()),
                         queryParameters(
                                 parameterWithName("page").description("The page number to fetch").optional(),
-                                parameterWithName("size").description("The number of results to include on each page").optional()
+                                parameterWithName("size").description("The number of results to include on each page").optional(),
+                                parameterWithName("includeUnsubscribed")
+                                        .optional()
+                                        .description("If true, includes unsubscribed feeds in the results. Defaults to false.")
                         ),
                         responseFields(
                                 fieldWithPath("subscriptions[].uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
@@ -94,6 +96,30 @@ class SubscriptionRestControllerTest {
                         )
                 ));
     }
+
+    @Test
+    void getAllSubscriptionsForUser_shouldIncludeUnsubscribedWhenRequested() throws Exception {
+        CustomUserDetails user = new CustomUserDetails(
+                1L, UUID.randomUUID(), "alice", "alice@test.com",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        UserSubscriptionDto sub1 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
+        UserSubscriptionDto sub2 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), false);
+        Page<UserSubscriptionDto> page = new PageImpl<>(List.of(sub1, sub2));
+
+        when(subscriptionService.getAllSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
+                .thenReturn(page);
+
+        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/subscriptions")
+                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
+                        .param("includeUnsubscribed", "true"))
+                .andExpect(status().isOk())
+                .andDo(document("subscriptions-list-with-unsubscribed",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())));
+    }
+
 
     @Test
     void getSubscriptionByUuid_shouldReturnSubscription() throws Exception {
@@ -242,5 +268,54 @@ class SubscriptionRestControllerTest {
                                 fieldWithPath("failure[].feedUrl").description("The feed URL").type(JsonFieldType.STRING),
                                 fieldWithPath("failure[].message").description("The error message").type(JsonFieldType.STRING)
                         )));
+    }
+
+    @Test
+    void updateSubscriptionStatus_shouldReturnUpdatedSubscription() throws Exception {
+        CustomUserDetails user = new CustomUserDetails(
+                1L,
+                UUID.randomUUID(),
+                "alice",
+                "alice@test.com",
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
+        UUID subscriptionUuid = UUID.randomUUID();
+        boolean newStatus = false;
+
+        UserSubscriptionDto updatedSubscription = new UserSubscriptionDto(
+                subscriptionUuid,
+                "test.com/feed1",
+                Instant.now(),
+                Instant.now(),
+                newStatus
+        );
+
+        when(subscriptionService.unsubscribeUserFromFeed(subscriptionUuid, user.id()))
+                .thenReturn(updatedSubscription);
+
+        // Act & Assert
+        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/v1/subscriptions/{uuid}/unsubscribe", subscriptionUuid)
+                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
+                        .with(csrf().asHeader())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.uuid").value(subscriptionUuid.toString()))
+                .andExpect(jsonPath("$.feedUrl").value("test.com/feed1"))
+                .andExpect(jsonPath("$.isSubscribed").value(false))
+                .andDo(document("subscription-unsubscribe",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("uuid").description("UUID of the subscription to update")
+                        ),
+                        responseFields(
+                                fieldWithPath("uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("feedUrl").description("The feed URL of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("createdAt").description("When the subscription was created").type(JsonFieldType.STRING),
+                                fieldWithPath("updatedAt").description("When the subscription was last updated").type(JsonFieldType.STRING),
+                                fieldWithPath("isSubscribed").description("The updated subscription status").type(JsonFieldType.BOOLEAN)
+                        )
+                ));
     }
 }

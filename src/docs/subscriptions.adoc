@@ -43,9 +43,20 @@ When a user fetches a list of subscriptions, their own subscriptions are returne
 
 operation::subscriptions-list[snippets='query-parameters,curl-request,response-fields,http-response']
 
+==== Include unsubscribed
+
+operation::subscriptions-list-with-unsubscribed[snippets='curl-request,http-response']
+
 [[actions-subscription-fetch]]
 === Fetch a single subscription
 
 Returns the details of a single subscription for the  authenticated user. Returns `404` if the user has no subscription entry for the feed in question.
 
 operation::subscription-get[snippets='path-parameters,curl-request,response-fields,http-response']
+
+[[actions-subscription-update]]
+=== Unsubscribe from a feed
+
+Unsubscribes the authenticated user from a feed. This action updates the user subscription record to mark the subscription as inactive. It does not delete the subscription record.
+
+operation::subscription-unsubscribe[snippets='path-parameters,curl-request,response-fields,http-response']
