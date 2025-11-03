@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: opa-java
+  mvc:
+    static-path-pattern: /docs/**
+  web:
+    resources:
+      static-locations: classpath:/static/docs
+      add-mappings: true
+  security:
+    oauth2:
+      authorizationserver:
+        issuer: http://localhost:8080
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080
+  datasource:
+    url: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+    username: "${POSTGRES_USER}"
+    password: "${POSTGRES_PASSWORD}"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  flyway:
+    user: "${POSTGRES_USER}"
+    password: "${POSTGRES_PASSWORD}"
+    schemas: "${POSTGRES_DB}"
+    locations: filesystem:db/migration
+    url: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+  data:
+    redis:
+      host: "${REDIS_HOST}"
+      port: "${REDIS_PORT}"
+      username: "${REDIS_USERNAME:redis}"
+      password: "${REDIS_PASSWORD:changeme}"
+  cache:
+    type: redis
+  session:
+    timeout: 7d
+
+server:
+  port: 8080
+
+admin:
+  username: "${ADMIN_USERNAME:admin}"
+  password: "${ADMIN_PASSWORD:changeme}"
+  email: "${ADMIN_EMAIL:admin@example.com}"

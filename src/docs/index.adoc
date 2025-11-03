@@ -1,0 +1,12 @@
+= OPA Java Documentation
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: right
+:toclevels: 2
+:sectlinks:
+
+This server implements the https://openpodcastapi.org[Open Podcast API].
+
+include::users.adoc[]
+include::subscriptions.adoc[]
