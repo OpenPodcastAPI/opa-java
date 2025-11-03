@@ -128,6 +128,7 @@ public class UserSubscriptionService {
     ///
     /// @param feedUUID the UUID of the subscription feed
     /// @param userId   the ID of the user
+    /// @return a [UserSubscriptionDto] containing the updated object
     @Transactional
     public UserSubscriptionDto unsubscribeUserFromFeed(UUID feedUUID, Long userId) {
         UserSubscription subscription = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, feedUUID)
