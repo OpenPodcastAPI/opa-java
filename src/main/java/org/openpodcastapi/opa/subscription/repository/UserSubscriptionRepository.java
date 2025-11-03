@@ -14,4 +14,6 @@ public interface UserSubscriptionRepository extends JpaRepository<UserSubscripti
     Optional<UserSubscription> findByUserIdAndSubscriptionUuid(Long userId, UUID subscriptionUuid);
 
     Page<UserSubscription> findAllByUserId(Long userId, Pageable pageable);
+
+    Page<UserSubscription> findAllByUserIdAndIsSubscribedTrue(Long userId, Pageable pageable);
 }
