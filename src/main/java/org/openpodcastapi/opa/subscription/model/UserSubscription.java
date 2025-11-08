@@ -1,10 +1,7 @@
 package org.openpodcastapi.opa.subscription.model;
 
 import jakarta.persistence.*;
-import lombok.Generated;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.openpodcastapi.opa.user.model.User;
 
 import java.time.Instant;
@@ -12,6 +9,8 @@ import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "user_subscription")
 public class UserSubscription {
     @Id
