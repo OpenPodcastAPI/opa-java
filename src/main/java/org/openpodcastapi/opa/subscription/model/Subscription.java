@@ -1,18 +1,17 @@
 package org.openpodcastapi.opa.subscription.model;
 
 import jakarta.persistence.*;
-import lombok.Generated;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "subscriptions")
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "subscriptions")
 public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
