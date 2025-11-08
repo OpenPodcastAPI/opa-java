@@ -22,7 +22,22 @@ public class UUIDHelper {
     /// @param feedUrl the URL to sanitize
     /// @return the sanitized URL
     public static String sanitizeFeedUrl(String feedUrl) {
-        return feedUrl.replaceFirst("^[a-zA-Z]+://", "").replaceAll("/+$", "");
+        if (feedUrl == null || feedUrl.isBlank()) {
+            throw new IllegalArgumentException("Invalid feed URL passed to function");
+        }
+
+        // Reject unsupported schemes (e.g., ftp://)
+        if (feedUrl.matches("^[a-zA-Z]+://.*") && !feedUrl.startsWith("http://") && !feedUrl.startsWith("https://")) {
+            throw new IllegalArgumentException("Invalid feed URL passed to function");
+        }
+
+        String sanitized = feedUrl.replaceFirst("^(https?://)", "").replaceAll("/+$", "");
+
+        if (!sanitized.contains(".")) {
+            throw new IllegalArgumentException("Invalid feed URL passed to function");
+        }
+
+        return sanitized;
     }
 
     /// Calculates the UUID of a provided feed URL using Podcast index methodology.
@@ -34,8 +49,7 @@ public class UUIDHelper {
     /// @return the calculated UUID
     public static UUID getFeedUUID(String feedUrl) {
         final String sanitizedFeedUrl = sanitizeFeedUrl(feedUrl);
-        final UUID feedUUID = UUID.fromString(sanitizedFeedUrl);
-        return generator.generate(feedUUID.toString());
+        return generator.generate(sanitizedFeedUrl);
     }
 
     /// Validates that a supplied subscription UUID has been calculated properly
