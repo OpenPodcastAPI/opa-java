@@ -1,0 +1,25 @@
+<!-- layouts/main.html -->
+<!DOCTYPE html>
+<html class="no-js"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <title id="page-title" layout:fragment="title">Open Podcast API</title>
+    <th:block layout:fragment="head-resources"></th:block>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0-alpha1/dist/htmx.min.js"></script>
+</head>
+<body>
+<div id="app" class="columns section" style="min-height: 100vh;">
+    <!-- Sidebar (hidden on mobile) -->
+    <aside th:replace="~{layouts/sidebar :: sidebar}"></aside>
+
+    <!-- Main content -->
+    <main class="container content" id="main-content">
+        <div layout:fragment="content"></div>
+    </main>
+</div>
+</body>
+</html>
