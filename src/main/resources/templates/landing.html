@@ -1,0 +1,47 @@
+<!-- home.html -->
+<!--/*@thymesVar id="username" type="String"*/-->
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title layout:fragment="title">Open Podcast API</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h1>Welcome to the Open Podcast API reference server</h1>
+    <p>The Open Podcast API is an initiative aiming to provide a feature-complete synchronization API specification for
+        podcast (web) apps and user-focused servers.</p>
+    <h2>Our goals</h2>
+    <div class="columns">
+        <div class="column">
+            <div class="card">
+                <div class="card-content">
+                    <h3 class="title is-4">For users</h3>
+                    <ul>
+                        <li>Synchronize subscriptions, listening progress, favorites, queues, and more</li>
+                        <li>Support multiple apps and online services</li>
+                        <li>Enable users to easily switch between providers without losing any information</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="card">
+                <div class="card-content">
+                    <h3 class="title is-4">For developers</h3>
+                    <ul>
+                        <li>Write clear and comprehensive documentation for features and behaviors</li>
+                        <li>Create reliable specifications that are decentralization-ready and easy to implement</li>
+                        <li>Provide a full <a href="https://spec.openapis.org/oas/latest" rel="noreferrer"
+                                              target="blank">OpenAPI specification</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

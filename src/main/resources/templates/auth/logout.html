@@ -1,0 +1,22 @@
+<!-- auth/logout.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title layout:fragment="title">Log out - Open Podcast API</title>
+</head>
+<body>
+
+<div layout:fragment="content" th:remove>
+    <h1>Are you sure you want to log out?</h1>
+    <div>
+        <form th:action="@{/logout}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" class="button is-danger">Log out</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

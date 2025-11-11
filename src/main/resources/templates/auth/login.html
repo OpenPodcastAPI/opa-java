@@ -1,0 +1,42 @@
+<!-- auth/login.html -->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title layout:fragment="title">Log in - Open Podcast API</title>
+</head>
+<body>
+<div layout:fragment="content" th:remove>
+    <h1 class="title">Log in</h1>
+    <div>
+        <div th:if="${loginError}" class="has-text-danger">
+            Invalid username or password.
+        </div>
+
+        <form th:action="@{/login}" method="post">
+            <div class="field">
+                <label for="username" class="label">Username</label>
+                <div class="control">
+                    <input autocomplete="username" id="username" name="username" class="input" type="text"
+                           placeholder="Username">
+                </div>
+            </div>
+            <div class="field">
+                <label for="password" class="label">Password</label>
+                <div class="control">
+                    <input autocomplete="current-password" id="password" name="password" class="input" type="password"
+                           placeholder="Password">
+                </div>
+            </div>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="field">
+                <div class="control">
+                    <button type="submit" name="submit" class="button is-success">Log in</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

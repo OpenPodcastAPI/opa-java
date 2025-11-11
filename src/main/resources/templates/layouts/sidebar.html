@@ -1,0 +1,10 @@
+<!-- layouts/sidebar.html -->
+<!--/*@thymesVar id="isAuthenticated" type="boolean"*/-->
+<aside th:fragment="sidebar" lang="en" class="column is-one-quarter-tablet is-one-fifth-desktop is-hidden-mobile menu">
+    <p class="menu-label">Account</p>
+    <ul class="menu-list" xmlns:th="http://www.thymeleaf.org" hx-boost="true">
+        <li th:if="${!isAuthenticated}"><a th:href="@{/login}">Log in</a></li>
+        <li th:if="${!isAuthenticated}"><a th:href="@{/register}">Sign up</a></li>
+        <li th:if="${isAuthenticated}"><a th:href="@{/logout-confirm}">Log out</a></li>
+    </ul>
+</aside>

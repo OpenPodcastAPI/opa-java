@@ -1,0 +1,19 @@
+<!-- home.html -->
+<!--/*@thymesVar id="username" type="String"*/-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/main}">
+<head>
+    <title layout:fragment="title">Home - Open Podcast API</title>
+</head>
+<body>
+
+<div layout:fragment="content" th:remove>
+    <article class="content">
+        <h1>Welcome, <span th:text="${username}"></span>!</h1>
+    </article>
+</div>
+
+</body>
+</html>
