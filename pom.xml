@@ -13,18 +13,25 @@
     <version>0.0.1</version>
     <name>Open Podcast API</name>
     <description>Open Podcast API reference server</description>
-    <url/>
+    <url>https://github.com/OpenPodcastApi/opa-java</url>
     <licenses>
-        <license/>
+        <license>
+            <name>The MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
     </licenses>
     <developers>
-        <developer/>
+        <developer>
+            <name>Ciarán Ainsworth</name>
+            <email>cda@sporiff.dev</email>
+            <organization>The Open Podcast API developers</organization>
+        </developer>
     </developers>
     <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
+        <connection>scm:git:https://github.com/OpenPodcastApi/opa-java.git</connection>
+        <developerConnection>scm:git:https://github.com/OpenPodcastApi/opa-java.git</developerConnection>
+        <url>https://github.com/OpenPodcastApi/opa-java</url>
+        <tag>HEAD</tag>
     </scm>
     <properties>
         <java.version>25</java.version>
