@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.openpodcastapi</groupId>
-    <artifactId>opa</artifactId>
+    <artifactId>opa-java</artifactId>
     <version>0.0.1</version>
     <name>Open Podcast API</name>
     <description>Open Podcast API reference server</description>
