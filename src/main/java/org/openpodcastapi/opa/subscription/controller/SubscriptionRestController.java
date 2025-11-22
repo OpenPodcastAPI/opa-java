@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +35,9 @@ public class SubscriptionRestController {
     /// @return a paginated list of subscriptions
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<SubscriptionPageDto> getAllSubscriptionsForUser(@AuthenticationPrincipal CustomUserDetails user, Pageable pageable, @RequestParam(defaultValue = "false") boolean includeUnsubscribed) {
+        log.info("{}", user.getAuthorities());
         Page<UserSubscriptionDto> dto;
 
         if (includeUnsubscribed) {
@@ -56,6 +59,7 @@ public class SubscriptionRestController {
     /// @throws IllegalArgumentException if the UUID is improperly formatted
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserSubscriptionDto> getSubscriptionByUuid(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) throws EntityNotFoundException {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
@@ -76,6 +80,7 @@ public class SubscriptionRestController {
     /// @throws IllegalArgumentException if the UUID is improperly formatted
     @PostMapping("/{uuid}/unsubscribe")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserSubscriptionDto> unsubscribeUserFromFeed(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
@@ -91,6 +96,7 @@ public class SubscriptionRestController {
     /// @param request a list of [SubscriptionCreateDto] objects
     /// @return a [BulkSubscriptionResponse] object
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BulkSubscriptionResponse> createUserSubscriptions(@RequestBody List<SubscriptionCreateDto> request, @AuthenticationPrincipal CustomUserDetails user) {
         BulkSubscriptionResponse response = service.addSubscriptions(request, user.id());
 

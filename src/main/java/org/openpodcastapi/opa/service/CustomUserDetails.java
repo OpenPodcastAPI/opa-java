@@ -1,14 +1,18 @@
 package org.openpodcastapi.opa.service;
 
+import org.openpodcastapi.opa.user.model.UserRoles;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /// Implements a custom user details service to expose UUID information
 public record CustomUserDetails(Long id, UUID uuid, String username, String password,
-                                Collection<? extends GrantedAuthority> authorities) implements UserDetails {
+                                Set<UserRoles> roles) implements UserDetails {
 
     @Override
     public String getUsername() {
@@ -22,7 +26,9 @@ public record CustomUserDetails(Long id, UUID uuid, String username, String pass
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
+                .collect(Collectors.toSet());
     }
 
     @Override

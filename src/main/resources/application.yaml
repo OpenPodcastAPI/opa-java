@@ -7,13 +7,6 @@ spring:
     resources:
       static-locations: classpath:/static/docs
       add-mappings: true
-  security:
-    oauth2:
-      authorizationserver:
-        issuer: http://localhost:8080
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8080
   datasource:
     url: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
     username: "${POSTGRES_USER}"
@@ -29,6 +22,7 @@ spring:
     schemas: "${POSTGRES_DB}"
     locations: filesystem:db/migration
     url: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+    enabled: false
   data:
     redis:
       host: "${REDIS_HOST}"
@@ -42,6 +36,12 @@ spring:
 
 server:
   port: 8080
+
+jwt:
+  secret: "${JWT_SECRET}"
+  ttl: "${JWT_TTL}"
+  expiration-minutes: "${JWT_EXPIRATION_MINUTES}"
+  refresh-days: "${JWT_REFRESH_DAYS}"
 
 admin:
   username: "${ADMIN_USERNAME:admin}"

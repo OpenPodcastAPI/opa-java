@@ -3,16 +3,16 @@ package org.openpodcastapi.opa.subscriptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.service.CustomUserDetails;
-import org.openpodcastapi.opa.subscription.controller.SubscriptionRestController;
 import org.openpodcastapi.opa.subscription.dto.BulkSubscriptionResponse;
 import org.openpodcastapi.opa.subscription.dto.SubscriptionCreateDto;
 import org.openpodcastapi.opa.subscription.dto.SubscriptionFailureDto;
 import org.openpodcastapi.opa.subscription.dto.UserSubscriptionDto;
 import org.openpodcastapi.opa.subscription.service.UserSubscriptionService;
+import org.openpodcastapi.opa.user.model.UserRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,17 +20,20 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -40,7 +43,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(SubscriptionRestController.class)
+@SpringBootTest
+@ActiveProfiles("test")
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets")
 class SubscriptionRestControllerTest {
@@ -54,8 +58,9 @@ class SubscriptionRestControllerTest {
     private UserSubscriptionService subscriptionService;
 
     @Test
+    @WithMockUser(username = "alice")
     void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
-        CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", Set.of(UserRoles.USER));
 
         UserSubscriptionDto sub1 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
         UserSubscriptionDto sub2 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), true);
@@ -64,7 +69,7 @@ class SubscriptionRestControllerTest {
         when(subscriptionService.getAllActiveSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
                 .thenReturn(page);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/subscriptions")
+        mockMvc.perform(get("/api/v1/subscriptions")
                         .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
                         .param("page", "0")
                         .param("size", "20"))
@@ -98,10 +103,11 @@ class SubscriptionRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "alice")
     void getAllSubscriptionsForUser_shouldIncludeUnsubscribedWhenRequested() throws Exception {
         CustomUserDetails user = new CustomUserDetails(
                 1L, UUID.randomUUID(), "alice", "alice@test.com",
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                Set.of(UserRoles.USER)
         );
 
         UserSubscriptionDto sub1 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
@@ -111,7 +117,7 @@ class SubscriptionRestControllerTest {
         when(subscriptionService.getAllSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
                 .thenReturn(page);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/subscriptions")
+        mockMvc.perform(get("/api/v1/subscriptions")
                         .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
                         .param("includeUnsubscribed", "true"))
                 .andExpect(status().isOk())
@@ -122,15 +128,16 @@ class SubscriptionRestControllerTest {
 
 
     @Test
+    @WithMockUser(username = "alice")
     void getSubscriptionByUuid_shouldReturnSubscription() throws Exception {
-        CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", Set.of(UserRoles.USER));
         UUID subscriptionUuid = UUID.randomUUID();
 
         UserSubscriptionDto sub = new UserSubscriptionDto(subscriptionUuid, "test.com/feed1", Instant.now(), Instant.now(), true);
         when(subscriptionService.getUserSubscriptionBySubscriptionUuid(subscriptionUuid, user.id()))
                 .thenReturn(sub);
 
-        mockMvc.perform(RestDocumentationRequestBuilders.get("/api/v1/subscriptions/{uuid}", subscriptionUuid)
+        mockMvc.perform(get("/api/v1/subscriptions/{uuid}", subscriptionUuid)
                         .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities()))))
                 .andExpect(status().isOk())
                 .andDo(document("subscription-get",
@@ -150,8 +157,9 @@ class SubscriptionRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser")
     void createUserSubscriptions_shouldReturnMixedResponse() throws Exception {
-        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", Set.of(UserRoles.USER));
         final Instant timestamp = Instant.now();
 
         final UUID goodFeedUUID = UUID.randomUUID();
@@ -197,8 +205,9 @@ class SubscriptionRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser")
     void createUserSubscription_shouldReturnSuccess() throws Exception {
-        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", Set.of(UserRoles.USER));
 
         final UUID goodFeedUUID = UUID.randomUUID();
         final Instant timestamp = Instant.now();
@@ -237,8 +246,9 @@ class SubscriptionRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "testuser")
     void createUserSubscription_shouldReturnFailure() throws Exception {
-        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", Set.of(UserRoles.USER));
 
         final String BAD_UUID = "62ad30ce-aac0-4f0a-a811";
 
@@ -271,13 +281,14 @@ class SubscriptionRestControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "alice")
     void updateSubscriptionStatus_shouldReturnUpdatedSubscription() throws Exception {
         CustomUserDetails user = new CustomUserDetails(
                 1L,
                 UUID.randomUUID(),
                 "alice",
                 "alice@test.com",
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                Set.of(UserRoles.USER)
         );
 
         UUID subscriptionUuid = UUID.randomUUID();

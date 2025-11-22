@@ -3,7 +3,6 @@ package org.openpodcastapi.opa.service;
 import lombok.RequiredArgsConstructor;
 import org.openpodcastapi.opa.user.model.User;
 import org.openpodcastapi.opa.user.repository.UserRepository;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -35,9 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getUuid(),
                 user.getUsername(),
                 user.getPassword(),
-                user.getUserRoles().stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name()))
-                        .toList()
+                user.getUserRoles()
         );
     }
 

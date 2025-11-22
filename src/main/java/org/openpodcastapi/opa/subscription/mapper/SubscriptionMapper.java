@@ -9,6 +9,7 @@ import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface SubscriptionMapper {
+    @Mapping(target = "id", ignore = true)
     @Mapping(target = "uuid", source = "uuid")
     @Mapping(target = "subscribers", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

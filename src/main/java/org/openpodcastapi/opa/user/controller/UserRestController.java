@@ -23,6 +23,7 @@ public class UserRestController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserPageDto> getAllUsers(Pageable pageable) {
         Page<UserDto> users = service.getAllUsers(pageable);
 
