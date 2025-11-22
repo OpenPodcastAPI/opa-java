@@ -1,0 +1,27 @@
+= Auth endpoint
+:doctype: book
+:sectlinks:
+
+The `auth` endpoint exposes operations for authenticating against the API.
+
+[[actions-auth]]
+== Actions
+
+[[actions-login]]
+=== Log in
+
+[source,httprequest]
+----
+POST /api/auth/login
+----
+
+Authenticates a user with `username` and `password`. These values must match the values of the user's account.
+
+operation::auth-token[snippets='request-fields,curl-request,response-fields,http-response']
+
+[[actions-refresh]]
+=== Request a new access token
+
+You can request a new access token by passing a valid refresh value to the API.
+
+operation::auth-refresh[snippets='request-fields,curl-request,response-fields,http-response']

@@ -2,6 +2,7 @@ package org.openpodcastapi.opa.subscriptions;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.openpodcastapi.opa.config.JwtAuthenticationFilter;
 import org.openpodcastapi.opa.subscription.dto.UserSubscriptionDto;
 import org.openpodcastapi.opa.subscription.mapper.UserSubscriptionMapper;
 import org.openpodcastapi.opa.subscription.mapper.UserSubscriptionMapperImpl;
@@ -27,6 +28,9 @@ class UserSubscriptionMapperTest {
 
     @MockitoBean
     private UserSubscriptionRepository userSubscriptionRepository;
+
+    @MockitoBean
+    private JwtAuthenticationFilter filter;
 
     /// Tests that a [UserSubscription] entity maps to a [UserSubscriptionDto] representation
     @Test

@@ -1,0 +1,38 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: true
+  flyway:
+    enabled: false
+  data:
+    redis:
+      host: "${REDIS_HOST:127.0.0.1}"
+      port: "${REDIS_PORT:6379}"
+      username: "${REDIS_USERNAME:redis}"
+      password: "${REDIS_PASSWORD:changeme}"
+  cache:
+    type: redis
+  session:
+    timeout: 7d
+
+
+jwt:
+  secret: "a-very-long-value-used-only-to-run-tests"
+  ttl: "3600000"
+  expiration-minutes: "15"
+  refresh-days: "7"
+
+admin:
+  username: "${ADMIN_USERNAME:admin}"
+  password: "${ADMIN_PASSWORD:changeme}"
+  email: "${ADMIN_EMAIL:admin@example.com}"
+debug: true

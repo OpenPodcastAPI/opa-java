@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 @Log4j2
 @RequiredArgsConstructor
-public class AuthController {
+public class UiAuthController {
     private static final String USER_REQUEST_ATTRIBUTE = "createUserRequest";
     private static final String REGISTER_TEMPLATE = "auth/register";
     private final UserService userService;
