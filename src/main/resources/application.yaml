@@ -19,10 +19,9 @@ spring:
   flyway:
     user: "${POSTGRES_USER}"
     password: "${POSTGRES_PASSWORD}"
-    schemas: "${POSTGRES_DB}"
-    locations: filesystem:db/migration
+    schemas: public
     url: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
-    enabled: false
+    enabled: true
   data:
     redis:
       host: "${REDIS_HOST}"
