@@ -3,10 +3,11 @@
 :icons: font
 :source-highlighter: highlightjs
 :toc: right
-:toclevels: 2
+:toclevels: 1
 :sectlinks:
 
 This server implements the https://openpodcastapi.org[Open Podcast API].
 
+include::auth.adoc[]
 include::users.adoc[]
 include::subscriptions.adoc[]

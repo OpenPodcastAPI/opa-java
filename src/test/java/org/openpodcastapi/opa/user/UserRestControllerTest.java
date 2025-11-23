@@ -2,8 +2,7 @@ package org.openpodcastapi.opa.user;
 
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
-import org.openpodcastapi.opa.user.dto.UserDto;
-import org.openpodcastapi.opa.user.service.UserService;
+import org.openpodcastapi.opa.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,10 +18,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -42,15 +45,43 @@ class UserRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
+
     @MockitoBean
     private UserService userService;
 
     @Test
-    @WithMockUser(roles = {"USER", "ADMIN"})
+    void getAllUsers_shouldReturn401_forAnonymousUser() throws Exception {
+        mockMvc.perform(get("/api/v1/users")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void getAllUsers_shouldReturn200_andList() throws Exception {
+        UserEntity mockUser = UserEntity
+                .builder()
+                .id(1L)
+                .uuid(UUID.randomUUID())
+                .username("admin")
+                .email("admin@test.test")
+                .userRoles(Set.of(UserRoles.USER, UserRoles.ADMIN))
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+
+        String accessToken = tokenService.generateAccessToken(mockUser);
+
         final Instant createdDate = Instant.now();
 
-        final UserDto user1 = new UserDto(
+        final UserDTO.UserResponseDTO user1 = new UserDTO.UserResponseDTO(
                 UUID.randomUUID(),
                 "alice",
                 "alice@test.com",
@@ -58,7 +89,7 @@ class UserRestControllerTest {
                 createdDate
         );
 
-        final UserDto user2 = new UserDto(
+        final UserDTO.UserResponseDTO user2 = new UserDTO.UserResponseDTO(
                 UUID.randomUUID(),
                 "bob",
                 "bob@test.com",
@@ -67,11 +98,12 @@ class UserRestControllerTest {
         );
 
         // Mock the service call to return users
-        PageImpl<UserDto> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
+        PageImpl<UserDTO.UserResponseDTO> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
         when(userService.getAllUsers(any())).thenReturn(page);
 
         // Perform the test for the admin role
         mockMvc.perform(get("/api/v1/users")
+                        .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON)
                         .param("page", "0")
                         .param("size", "20"))
@@ -79,16 +111,19 @@ class UserRestControllerTest {
                 .andDo(document("users-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         queryParameters(
                                 parameterWithName("page").description("The page number to fetch").optional(),
                                 parameterWithName("size").description("The number of results to include on each page").optional()
                         ),
                         responseFields(
-                                fieldWithPath("users[].uuid").description("The user's UUID").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].username").description("The user's username").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].email").description("User email address").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].createdAt").description("The date at which the user was created").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].updatedAt").description("The date at which the user was last updated").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].uuid").description("The userEntity's UUID").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].username").description("The userEntity's username").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].email").description("UserEntity email address").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].createdAt").description("The date at which the userEntity was created").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].updatedAt").description("The date at which the userEntity was last updated").type(JsonFieldType.STRING),
                                 fieldWithPath("page").description("Current page number").type(JsonFieldType.NUMBER),
                                 fieldWithPath("size").description("Page size").type(JsonFieldType.NUMBER),
                                 fieldWithPath("totalElements").description("Total number of users").type(JsonFieldType.NUMBER),
@@ -101,14 +136,29 @@ class UserRestControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-        // Mock the user with a "USER" role
+    @WithMockUser(username = "user", roles = "USER")
     void getAllUsers_shouldReturn403_forUserRole() throws Exception {
+        UserEntity mockUser = UserEntity
+                .builder()
+                .id(1L)
+                .uuid(UUID.randomUUID())
+                .username("user")
+                .email("user@test.test")
+                .userRoles(Set.of(UserRoles.USER))
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+
+        String accessToken = tokenService.generateAccessToken(mockUser);
+
         mockMvc.perform(get("/api/v1/users")
+                        .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON)
                         .param("page", "0")
                         .param("size", "20"))
-                .andExpect(status().isForbidden()) // Expect 403 for the user role
+                .andExpect(status().isForbidden())
                 .andDo(document("users-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),

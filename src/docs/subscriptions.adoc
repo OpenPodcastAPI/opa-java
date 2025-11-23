@@ -2,13 +2,11 @@
 :doctype: book
 :sectlinks:
 
-The `subscriptions` endpoint exposes operations taken on subscriptions. A subscription represents two things:
+The `subscriptions` endpoint exposes operations taken on subscriptions.
+A subscriptionEntity represents two things:
 
 1. A podcast feed
 2. The relationship between a user and a podcast feed
-
-[[actions-subscriptions]]
-== Actions
 
 [source,httprequest]
 ----
@@ -16,13 +14,14 @@ POST /api/v1/users
 ----
 
 [[actions-subscriptions-create]]
-=== Create subscriptions
+== Create subscriptions
 
-When a user adds a subscription to the system, a corresponding `subscription` object is fetched or created depending on whether a matching subscription is present. A link is then created between the user and the subscription.
+When a user adds a subscription to the system, a corresponding `subscriptionEntity` object is fetched or created depending on whether a matching subscriptionEntity is present.
+A link is then created between the user and the subscriptionEntity.
 
-operation::subscriptions-bulk-create-mixed[snippets='request-fields,curl-request,response-fields,http-response']
+operation::subscriptions-bulk-create-mixed[snippets='request-headers,request-fields,curl-request,response-fields,http-response']
 
-==== Responses
+=== Responses
 
 If all feeds are valid and no problems are encountered, the server responds with an array of `success` objects and an empty array of `failure` objects.
 
@@ -37,26 +36,30 @@ If the server receives a mix of responses, both arrays are populated.
 include::{snippets}/subscriptions-bulk-create-mixed/http-response.adoc[]
 
 [[actions-subscriptions-list]]
-=== List subscriptions
+== List subscriptions
 
-When a user fetches a list of subscriptions, their own subscriptions are returned. The subscriptions of other users are not returned.
+When a user fetches a list of subscriptions, their own subscriptions are returned.
+The subscriptions of other users are not returned.
 
-operation::subscriptions-list[snippets='query-parameters,curl-request,response-fields,http-response']
+operation::subscriptions-list[snippets='request-headers,query-parameters,curl-request,response-fields,http-response']
 
-==== Include unsubscribed
+=== Include unsubscribed
 
 operation::subscriptions-list-with-unsubscribed[snippets='curl-request,http-response']
 
-[[actions-subscription-fetch]]
-=== Fetch a single subscription
+[[actions-subscriptionEntity-fetch]]
+== Fetch a single subscriptionEntity
 
-Returns the details of a single subscription for the  authenticated user. Returns `404` if the user has no subscription entry for the feed in question.
+Returns the details of a single subscriptionEntity for the authenticated user.
+Returns `404` if the user has no subscriptionEntity entry for the feed in question.
 
-operation::subscription-get[snippets='path-parameters,curl-request,response-fields,http-response']
+operation::subscriptionEntity-get[snippets='request-headers,path-parameters,curl-request,response-fields,http-response']
 
-[[actions-subscription-update]]
-=== Unsubscribe from a feed
+[[actions-subscriptionEntity-update]]
+== Unsubscribe from a feed
 
-Unsubscribes the authenticated user from a feed. This action updates the user subscription record to mark the subscription as inactive. It does not delete the subscription record.
+Unsubscribes the authenticated user from a feed.
+This action updates the user subscriptionEntity record to mark the subscriptionEntity as inactive.
+It does not delete the subscriptionEntity record.
 
-operation::subscription-unsubscribe[snippets='path-parameters,curl-request,response-fields,http-response']
+operation::subscriptionEntity-unsubscribe[snippets='request-headers,path-parameters,curl-request,response-fields,http-response']
