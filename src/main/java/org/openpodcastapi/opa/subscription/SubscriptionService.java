@@ -79,7 +79,7 @@ public class SubscriptionService {
     /// If an existing entry is found for the userEntity and subscriptionEntity, the `isSubscribed` property is set to `true`
     ///
     /// @param subscriptionEntity the target subscriptionEntity
-    /// @param userId       the ID of the target userEntity
+    /// @param userId             the ID of the target userEntity
     /// @return a [SubscriptionDTO.UserSubscriptionDTO] representation of the subscriptionEntity link
     /// @throws EntityNotFoundException if no matching userEntity is found
     protected SubscriptionDTO.UserSubscriptionDTO persistUserSubscription(SubscriptionEntity subscriptionEntity, Long userId) {
@@ -90,7 +90,7 @@ public class SubscriptionService {
             log.debug("Creating new userEntity subscriptionEntity for userEntity {} and subscriptionEntity {}", userId, subscriptionEntity.getUuid());
             UserSubscriptionEntity createdSubscription = new UserSubscriptionEntity();
             createdSubscription.setIsSubscribed(true);
-            createdSubscription.setUserEntity(userEntity);
+            createdSubscription.setUser(userEntity);
             createdSubscription.setSubscription(subscriptionEntity);
             return userSubscriptionRepository.save(createdSubscription);
         });

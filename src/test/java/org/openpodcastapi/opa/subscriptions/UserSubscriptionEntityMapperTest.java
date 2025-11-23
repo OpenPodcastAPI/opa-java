@@ -49,7 +49,7 @@ class UserSubscriptionEntityMapperTest {
 
         UserSubscriptionEntity userSubscriptionEntity = UserSubscriptionEntity.builder()
                 .uuid(uuid)
-                .userEntity(userEntity)
+                .user(userEntity)
                 .subscription(subscriptionEntity)
                 .isSubscribed(true)
                 .createdAt(timestamp)

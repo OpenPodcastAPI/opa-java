@@ -74,8 +74,8 @@ public class TokenService {
 
     /// Validates the refresh token for a userEntity and updates its expiry time
     ///
-    /// @param rawToken the raw token to validate
-    /// @param userEntity     the [UserEntity] to validate the token for
+    /// @param rawToken   the raw token to validate
+    /// @param userEntity the [UserEntity] to validate the token for
     /// @return the validated [UserEntity]
     public UserEntity validateRefreshToken(String rawToken, UserEntity userEntity) {
         // Only fetch refresh tokens for the requesting userEntity

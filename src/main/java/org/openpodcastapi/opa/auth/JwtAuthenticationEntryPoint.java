@@ -1,8 +1,9 @@
 package org.openpodcastapi.opa.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.openpodcastapi.opa.util.JSONFormatter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    private final ObjectMapper objectMapper;
+
     /// Returns a 401 when a request is made without a valid bearer token
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
@@ -23,6 +27,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         AuthDTO.ErrorMessageDTO message = new AuthDTO.ErrorMessageDTO("Access denied", "You need to log in to access this resource");
 
-        response.getWriter().write(JSONFormatter.parseDataToJSON(message));
+        response.getWriter().write(objectMapper.writeValueAsString(message));
     }
 }
