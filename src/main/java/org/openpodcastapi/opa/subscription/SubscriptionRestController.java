@@ -22,9 +22,9 @@ import java.util.UUID;
 public class SubscriptionRestController {
     private final SubscriptionService service;
 
-    /// Returns all subscriptions for a given user
+    /// Returns all subscriptions for a given userEntity
     ///
-    /// @param user                the [CustomUserDetails] of the authenticated user
+    /// @param user                the [CustomUserDetails] of the authenticated userEntity
     /// @param pageable            the [Pageable] pagination object
     /// @param includeUnsubscribed whether to include unsubscribed feeds in the response
     /// @return a paginated list of subscriptions
@@ -67,7 +67,7 @@ public class SubscriptionRestController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    /// Updates the subscriptionEntity status of a subscriptionEntity for a given user
+    /// Updates the subscriptionEntity status of a subscriptionEntity for a given userEntity
     ///
     /// @param uuid the UUID of the subscriptionEntity to update
     /// @return the updated subscriptionEntity entity
@@ -86,7 +86,7 @@ public class SubscriptionRestController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    /// Bulk creates UserSubscriptions for a user. Creates new SubscriptionEntity objects if not already present
+    /// Bulk creates UserSubscriptions for a userEntity. Creates new SubscriptionEntity objects if not already present
     ///
     /// @param request a list of [SubscriptionDTO.SubscriptionCreateDTO] objects
     /// @return a [SubscriptionDTO.BulkSubscriptionResponseDTO] object

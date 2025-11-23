@@ -2,7 +2,7 @@ package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -25,7 +25,7 @@ public class UserSubscriptionEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private UserEntity userEntity;
 
     @ManyToOne
     @JoinColumn(name = "subscription_id")

@@ -2,7 +2,7 @@ package org.openpodcastapi.opa.security;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 
 import java.time.Instant;
 
@@ -12,7 +12,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RefreshToken {
+public class RefreshTokenEntity {
     @Id
     @Generated
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +22,7 @@ public class RefreshToken {
     private String tokenHash;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private User user;
+    private UserEntity user;
 
     @Column(nullable = false)
     private Instant expiresAt;

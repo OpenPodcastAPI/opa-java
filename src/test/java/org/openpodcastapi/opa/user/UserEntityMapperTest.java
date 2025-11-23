@@ -14,19 +14,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserMapperImpl.class)
-class UserMapperSpringTest {
+class UserEntityMapperTest {
     @Autowired
     private UserMapper mapper;
 
     @MockitoBean
     private UserRepository userRepository;
 
-    /// Tests that a [User] entity maps to a [UserDTO.UserResponseDTO] representation
+    /// Tests that a [UserEntity] entity maps to a [UserDTO.UserResponseDTO] representation
     @Test
     void testToDto() {
         final Instant timestamp = Instant.now();
         final UUID uuid = UUID.randomUUID();
-        User user = User.builder()
+        UserEntity userEntity = UserEntity.builder()
                 .uuid(uuid)
                 .username("test")
                 .email("test@test.test")
@@ -34,24 +34,24 @@ class UserMapperSpringTest {
                 .updatedAt(timestamp)
                 .build();
 
-        UserDTO.UserResponseDTO dto = mapper.toDto(user);
+        UserDTO.UserResponseDTO dto = mapper.toDto(userEntity);
         assertNotNull(dto);
-        assertEquals(user.getUuid(), dto.uuid());
-        assertEquals(user.getUsername(), dto.username());
-        assertEquals(user.getEmail(), dto.email());
-        assertEquals(user.getCreatedAt(), dto.createdAt());
-        assertEquals(user.getUpdatedAt(), dto.updatedAt());
+        assertEquals(userEntity.getUuid(), dto.uuid());
+        assertEquals(userEntity.getUsername(), dto.username());
+        assertEquals(userEntity.getEmail(), dto.email());
+        assertEquals(userEntity.getCreatedAt(), dto.createdAt());
+        assertEquals(userEntity.getUpdatedAt(), dto.updatedAt());
     }
 
-    /// Tests that a [UserDTO.CreateUserDTO] maps to a [User] entity
+    /// Tests that a [UserDTO.CreateUserDTO] maps to a [UserEntity] entity
     @Test
     void testToEntity() {
         UserDTO.CreateUserDTO dto = new UserDTO.CreateUserDTO("test", "testPassword", "test@test.test");
-        User user = mapper.toEntity(dto);
+        UserEntity userEntity = mapper.toEntity(dto);
 
-        assertNotNull(user);
-        assertEquals(dto.email(), user.getEmail());
-        assertEquals(dto.username(), user.getUsername());
-        assertNull(user.getPassword());
+        assertNotNull(userEntity);
+        assertEquals(dto.email(), userEntity.getEmail());
+        assertEquals(dto.username(), userEntity.getUsername());
+        assertNull(userEntity.getPassword());
     }
 }

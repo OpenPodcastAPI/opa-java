@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.service.CustomUserDetails;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -37,17 +37,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /// Returns an authentication token for a user
     ///
-    /// @param user the [User] to fetch a token for
+    /// @param userEntity the [UserEntity] to fetch a token for
     /// @return a generated token
     /// @throws EntityNotFoundException if no matching user is found
-    private static UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(User user) throws EntityNotFoundException {
+    private static UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(UserEntity userEntity) throws EntityNotFoundException {
         // Create a new CustomUserDetails entity with the fetched user
         CustomUserDetails userDetails =
-                new CustomUserDetails(user.getId(),
-                        user.getUuid(),
-                        user.getUsername(),
-                        user.getPassword(),
-                        user.getUserRoles());
+                new CustomUserDetails(userEntity.getId(),
+                        userEntity.getUuid(),
+                        userEntity.getUsername(),
+                        userEntity.getPassword(),
+                        userEntity.getUserRoles());
 
         // Return a token for the user
         return new UsernamePasswordAuthenticationToken(
@@ -99,10 +99,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             UUID parsedUuid = UUID.fromString(userUuid);
 
             // Fetch the matching user
-            User user = repository.getUserByUuid(parsedUuid).orElseThrow(() -> new EntityNotFoundException("No matching user found"));
+            UserEntity userEntity = repository.getUserByUuid(parsedUuid).orElseThrow(() -> new EntityNotFoundException("No matching user found"));
 
             // Create a user
-            UsernamePasswordAuthenticationToken authentication = getUsernamePasswordAuthenticationToken(user);
+            UsernamePasswordAuthenticationToken authentication = getUsernamePasswordAuthenticationToken(userEntity);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {

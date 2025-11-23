@@ -82,11 +82,11 @@ class UserRestControllerTest {
                                 parameterWithName("size").description("The number of results to include on each page").optional()
                         ),
                         responseFields(
-                                fieldWithPath("users[].uuid").description("The user's UUID").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].username").description("The user's username").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].email").description("User email address").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].createdAt").description("The date at which the user was created").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].updatedAt").description("The date at which the user was last updated").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].uuid").description("The userEntity's UUID").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].username").description("The userEntity's username").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].email").description("UserEntity email address").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].createdAt").description("The date at which the userEntity was created").type(JsonFieldType.STRING),
+                                fieldWithPath("users[].updatedAt").description("The date at which the userEntity was last updated").type(JsonFieldType.STRING),
                                 fieldWithPath("page").description("Current page number").type(JsonFieldType.NUMBER),
                                 fieldWithPath("size").description("Page size").type(JsonFieldType.NUMBER),
                                 fieldWithPath("totalElements").description("Total number of users").type(JsonFieldType.NUMBER),
@@ -100,13 +100,13 @@ class UserRestControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-        // Mock the user with a "USER" role
+        // Mock the userEntity with a "USER" role
     void getAllUsers_shouldReturn403_forUserRole() throws Exception {
         mockMvc.perform(get("/api/v1/users")
                         .accept(MediaType.APPLICATION_JSON)
                         .param("page", "0")
                         .param("size", "20"))
-                .andExpect(status().isForbidden()) // Expect 403 for the user role
+                .andExpect(status().isForbidden()) // Expect 403 for the userEntity role
                 .andDo(document("users-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),

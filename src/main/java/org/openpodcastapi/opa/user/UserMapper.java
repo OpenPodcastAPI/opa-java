@@ -5,7 +5,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    UserDTO.UserResponseDTO toDto(User user);
+    UserDTO.UserResponseDTO toDto(UserEntity userEntity);
 
     @Mapping(target = "uuid", ignore = true)
     @Mapping(target = "id", ignore = true)
@@ -14,5 +14,5 @@ public interface UserMapper {
     @Mapping(target = "userRoles", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    User toEntity(UserDTO.CreateUserDTO dto);
+    UserEntity toEntity(UserDTO.CreateUserDTO dto);
 }

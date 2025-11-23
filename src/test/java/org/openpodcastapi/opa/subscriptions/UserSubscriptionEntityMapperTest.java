@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openpodcastapi.opa.config.JwtAuthenticationFilter;
 import org.openpodcastapi.opa.subscription.*;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserSubscriptionMapperImpl.class)
-class UserSubscriptionEntityEntityMapperTest {
+class UserSubscriptionEntityMapperTest {
     @Autowired
     private UserSubscriptionMapper mapper;
 
@@ -32,7 +32,7 @@ class UserSubscriptionEntityEntityMapperTest {
     void testToDto() {
         final Instant timestamp = Instant.now();
         final UUID uuid = UUID.randomUUID();
-        User user = User.builder()
+        UserEntity userEntity = UserEntity.builder()
                 .uuid(UUID.randomUUID())
                 .username("test")
                 .email("test@test.test")
@@ -49,7 +49,7 @@ class UserSubscriptionEntityEntityMapperTest {
 
         UserSubscriptionEntity userSubscriptionEntity = UserSubscriptionEntity.builder()
                 .uuid(uuid)
-                .user(user)
+                .userEntity(userEntity)
                 .subscription(subscriptionEntity)
                 .isSubscribed(true)
                 .createdAt(timestamp)

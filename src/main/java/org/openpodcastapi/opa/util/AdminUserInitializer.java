@@ -2,7 +2,7 @@ package org.openpodcastapi.opa.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRoles;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +33,7 @@ public class AdminUserInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (userRepository.getUserByUsername(username).isEmpty()) {
-            User admin = new User();
+            UserEntity admin = new UserEntity();
             admin.setUsername(username);
             admin.setEmail(email);
             admin.setPassword(encoder.encode(password));

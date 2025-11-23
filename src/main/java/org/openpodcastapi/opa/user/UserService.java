@@ -34,19 +34,19 @@ public class UserService {
         }
 
         // Create a new user with a hashed password and a default `USER` role.
-        User newUser = mapper.toEntity(dto);
-        newUser.setPassword(passwordEncoder.encode(dto.password()));
-        newUser.getUserRoles().add(UserRoles.USER);
+        UserEntity newUserEntity = mapper.toEntity(dto);
+        newUserEntity.setPassword(passwordEncoder.encode(dto.password()));
+        newUserEntity.getUserRoles().add(UserRoles.USER);
 
         // Save the user and return the DTO representation.
-        User persistedUser = repository.save(newUser);
-        log.debug("persisted user {}", persistedUser.getUuid());
-        return mapper.toDto(persistedUser);
+        UserEntity persistedUserEntity = repository.save(newUserEntity);
+        log.debug("persisted user {}", persistedUserEntity.getUuid());
+        return mapper.toDto(persistedUserEntity);
     }
 
     @Transactional(readOnly = true)
     public Page<UserDTO.UserResponseDTO> getAllUsers(Pageable pageable) {
-        Page<User> users = repository.findAll(pageable);
+        Page<UserEntity> users = repository.findAll(pageable);
 
         log.debug("returning {} users", users.getTotalElements());
 
@@ -60,9 +60,9 @@ public class UserService {
     /// @throws EntityNotFoundException if no matching record is found
     @Transactional
     public String deleteUser(UUID uuid) throws EntityNotFoundException {
-        User user = repository.getUserByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+        UserEntity userEntity = repository.getUserByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
 
-        repository.delete(user);
+        repository.delete(userEntity);
 
         return "user " + uuid.toString() + "deleted";
     }

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.RefreshTokenRepository;
 import org.openpodcastapi.opa.security.TokenService;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRoles;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,8 +59,8 @@ class AuthApiTest {
 
     @BeforeEach
     void setup() {
-        // Mock the user lookup
-        User mockUser = User.builder()
+        // Mock the userEntity lookup
+        UserEntity mockUserEntity = UserEntity.builder()
                 .id(2L)
                 .uuid(UUID.randomUUID())
                 .email("test@test.test")
@@ -72,17 +72,17 @@ class AuthApiTest {
                 .build();
 
         // Mock repository behavior for finding user by username
-        when(userRepository.findByUsername("test_user")).thenReturn(Optional.of(mockUser));
+        when(userRepository.findByUsername("test_user")).thenReturn(Optional.of(mockUserEntity));
 
         // Mock the refresh token validation to return the mock user
-        when(tokenService.validateRefreshToken(anyString(), any(User.class)))
-                .thenReturn(mockUser);
+        when(tokenService.validateRefreshToken(anyString(), any(UserEntity.class)))
+                .thenReturn(mockUserEntity);
 
         // Mock the access token generation
-        when(tokenService.generateAccessToken(any(User.class))).thenReturn("eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI2MmJjZjczZC0xNGVjLTRkZmMtOGY5ZS1hMDQ0YjE4YjJiYTUiLCJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzYzODQzMzEwLCJleHAiOjE3NjM4NDQyMTB9.B9aj5DoVpNe6HTxXm8iTHj5XaqFCcR1ZHRZq6xiqY28YvGGStVkPpedDVZfc02-B");
+        when(tokenService.generateAccessToken(any(UserEntity.class))).thenReturn("eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI2MmJjZjczZC0xNGVjLTRkZmMtOGY5ZS1hMDQ0YjE4YjJiYTUiLCJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzYzODQzMzEwLCJleHAiOjE3NjM4NDQyMTB9.B9aj5DoVpNe6HTxXm8iTHj5XaqFCcR1ZHRZq6xiqY28YvGGStVkPpedDVZfc02-B");
 
         // Mock the refresh token generation
-        when(tokenService.generateRefreshToken(any(User.class))).thenReturn("8be54fc2-70ec-48ef-a8ff-4548fd8932b8e947a7ab-99b5-4cfb-b546-ac37eafa6c98");
+        when(tokenService.generateRefreshToken(any(UserEntity.class))).thenReturn("8be54fc2-70ec-48ef-a8ff-4548fd8932b8e947a7ab-99b5-4cfb-b546-ac37eafa6c98");
     }
 
     @Test

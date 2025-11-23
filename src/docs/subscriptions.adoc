@@ -18,7 +18,7 @@ POST /api/v1/users
 [[actions-subscriptions-create]]
 === Create subscriptions
 
-When a user adds a subscriptionEntity to the system, a corresponding `subscriptionEntity` object is fetched or created depending on whether a matching subscriptionEntity is present. A link is then created between the user and the subscriptionEntity.
+When a user adds a subscription to the system, a corresponding `subscriptionEntity` object is fetched or created depending on whether a matching subscriptionEntity is present. A link is then created between the user and the subscriptionEntity.
 
 operation::subscriptions-bulk-create-mixed[snippets='request-fields,curl-request,response-fields,http-response']
 

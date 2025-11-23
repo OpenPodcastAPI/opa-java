@@ -1,7 +1,7 @@
 package org.openpodcastapi.opa.service;
 
 import lombok.RequiredArgsConstructor;
-import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -22,19 +22,19 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         return userRepository.getUserByUsername(username)
                 .map(this::mapToUserDetails)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("UserEntity not found"));
     }
 
     /// Maps a user to a custom user details model
     ///
-    /// @param user the user model to map
-    private CustomUserDetails mapToUserDetails(User user) {
+    /// @param userEntity the [UserEntity] model to map
+    private CustomUserDetails mapToUserDetails(UserEntity userEntity) {
         return new CustomUserDetails(
-                user.getId(),
-                user.getUuid(),
-                user.getUsername(),
-                user.getPassword(),
-                user.getUserRoles()
+                userEntity.getId(),
+                userEntity.getUuid(),
+                userEntity.getUsername(),
+                userEntity.getPassword(),
+                userEntity.getUserRoles()
         );
     }
 
