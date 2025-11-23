@@ -1,10 +1,13 @@
 package org.openpodcastapi.opa.subscriptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.openpodcastapi.opa.service.CustomUserDetails;
+import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.subscription.SubscriptionDTO;
 import org.openpodcastapi.opa.subscription.SubscriptionService;
+import org.openpodcastapi.opa.user.UserEntity;
+import org.openpodcastapi.opa.user.UserRepository;
 import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
@@ -16,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -24,19 +26,20 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,23 +54,49 @@ class SubscriptionEntityRestControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
+
     @MockitoBean
     private SubscriptionService subscriptionService;
 
-    @Test
-    @WithMockUser(username = "alice")
-    void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
-        CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", Set.of(UserRoles.USER));
+    private String accessToken;
 
+    private UserEntity mockUser;
+
+    @BeforeEach
+    void setup() {
+        mockUser = UserEntity
+                .builder()
+                .id(1L)
+                .uuid(UUID.randomUUID())
+                .username("user")
+                .email("user@test.test")
+                .userRoles(Set.of(UserRoles.USER))
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+
+        accessToken = tokenService.generateAccessToken(mockUser);
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
         SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
         SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), true);
         Page<SubscriptionDTO.UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
 
-        when(subscriptionService.getAllActiveSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
+        when(subscriptionService.getAllActiveSubscriptionsForUser(eq(mockUser.getId()), any(Pageable.class)))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/subscriptions")
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
+                        .header("Authorization", "Bearer " + accessToken)
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
@@ -75,6 +104,9 @@ class SubscriptionEntityRestControllerTest {
                 .andDo(document("subscriptions-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         queryParameters(
                                 parameterWithName("page").description("The page number to fetch").optional(),
                                 parameterWithName("size").description("The number of results to include on each page").optional(),
@@ -100,22 +132,17 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "alice")
+    @WithMockUser(username = "user")
     void getAllSubscriptionsForUser_shouldIncludeUnsubscribedWhenRequested() throws Exception {
-        CustomUserDetails user = new CustomUserDetails(
-                1L, UUID.randomUUID(), "alice", "alice@test.com",
-                Set.of(UserRoles.USER)
-        );
-
         SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
         SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), false);
         Page<SubscriptionDTO.UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
 
-        when(subscriptionService.getAllSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
+        when(subscriptionService.getAllSubscriptionsForUser(eq(mockUser.getId()), any(Pageable.class)))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/v1/subscriptions")
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
+                        .header("Authorization", "Bearer " + accessToken)
                         .param("includeUnsubscribed", "true"))
                 .andExpect(status().isOk())
                 .andDo(document("subscriptions-list-with-unsubscribed",
@@ -125,21 +152,23 @@ class SubscriptionEntityRestControllerTest {
 
 
     @Test
-    @WithMockUser(username = "alice")
+    @WithMockUser(username = "user")
     void getSubscriptionByUuid_shouldReturnSubscription() throws Exception {
-        CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", Set.of(UserRoles.USER));
         UUID subscriptionUuid = UUID.randomUUID();
 
         SubscriptionDTO.UserSubscriptionDTO sub = new SubscriptionDTO.UserSubscriptionDTO(subscriptionUuid, "test.com/feed1", Instant.now(), Instant.now(), true);
-        when(subscriptionService.getUserSubscriptionBySubscriptionUuid(subscriptionUuid, user.id()))
+        when(subscriptionService.getUserSubscriptionBySubscriptionUuid(subscriptionUuid, mockUser.getId()))
                 .thenReturn(sub);
 
         mockMvc.perform(get("/api/v1/subscriptions/{uuid}", subscriptionUuid)
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities()))))
+                        .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andDo(document("subscriptionEntity-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         pathParameters(
                                 parameterWithName("uuid").description("UUID of the subscriptionEntity to retrieve")
                         ),
@@ -154,9 +183,8 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "user")
     void createUserSubscriptions_shouldReturnMixedResponse() throws Exception {
-        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", Set.of(UserRoles.USER));
         final Instant timestamp = Instant.now();
 
         final UUID goodFeedUUID = UUID.randomUUID();
@@ -170,18 +198,20 @@ class SubscriptionEntityRestControllerTest {
                 List.of(new SubscriptionDTO.SubscriptionFailureDTO(BAD_UUID, "test.com/feed2", "invalid UUID format"))
         );
 
-        when(subscriptionService.addSubscriptions(anyList(), eq(user.id())))
+        when(subscriptionService.addSubscriptions(anyList(), eq(mockUser.getId())))
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/v1/subscriptions")
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
-                        .with(csrf())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(List.of(dto1, dto2))))
                 .andExpect(status().isMultiStatus())
                 .andDo(document("subscriptions-bulk-create-mixed",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         requestFields(
                                 fieldWithPath("[].uuid").description("The UUID of the subscriptionEntity"),
                                 fieldWithPath("[].feedUrl").description("The feed URL of the subscriptionEntity to create")
@@ -202,10 +232,8 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "user")
     void createUserSubscription_shouldReturnSuccess() throws Exception {
-        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", Set.of(UserRoles.USER));
-
         final UUID goodFeedUUID = UUID.randomUUID();
         final Instant timestamp = Instant.now();
 
@@ -216,18 +244,20 @@ class SubscriptionEntityRestControllerTest {
                 List.of()
         );
 
-        when(subscriptionService.addSubscriptions(anyList(), eq(user.id())))
+        when(subscriptionService.addSubscriptions(anyList(), eq(mockUser.getId())))
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/v1/subscriptions")
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
-                        .with(csrf())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(List.of(dto))))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("subscriptions-bulk-create-success",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         requestFields(
                                 fieldWithPath("[].uuid").description("The UUID of the subscriptionEntity"),
                                 fieldWithPath("[].feedUrl").description("The feed URL of the subscriptionEntity to create")
@@ -243,10 +273,8 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "testuser")
+    @WithMockUser(username = "user")
     void createUserSubscription_shouldReturnFailure() throws Exception {
-        final CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "testuser", "test@test.com", Set.of(UserRoles.USER));
-
         final String BAD_UUID = "62ad30ce-aac0-4f0a-a811";
 
         SubscriptionDTO.SubscriptionCreateDTO dto = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed2");
@@ -256,18 +284,20 @@ class SubscriptionEntityRestControllerTest {
                 List.of(new SubscriptionDTO.SubscriptionFailureDTO(BAD_UUID, "test.com/feed2", "invalid UUID format"))
         );
 
-        when(subscriptionService.addSubscriptions(anyList(), eq(user.id())))
+        when(subscriptionService.addSubscriptions(anyList(), eq(mockUser.getId())))
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/v1/subscriptions")
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
-                        .with(csrf())
+                        .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(List.of(dto))))
                 .andExpect(status().isBadRequest())
                 .andDo(document("subscriptions-bulk-create-failure",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         responseFields(
                                 fieldWithPath("success[]").description("List of feed URLs successfully added").type(JsonFieldType.ARRAY).ignored(),
                                 fieldWithPath("failure[]").description("List of feed URLs that failed to add").type(JsonFieldType.ARRAY),
@@ -278,16 +308,8 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "alice")
+    @WithMockUser(username = "user")
     void updateSubscriptionStatus_shouldReturnUpdatedSubscription() throws Exception {
-        CustomUserDetails user = new CustomUserDetails(
-                1L,
-                UUID.randomUUID(),
-                "alice",
-                "alice@test.com",
-                Set.of(UserRoles.USER)
-        );
-
         UUID subscriptionUuid = UUID.randomUUID();
         boolean newStatus = false;
 
@@ -299,13 +321,12 @@ class SubscriptionEntityRestControllerTest {
                 newStatus
         );
 
-        when(subscriptionService.unsubscribeUserFromFeed(subscriptionUuid, user.id()))
+        when(subscriptionService.unsubscribeUserFromFeed(subscriptionUuid, mockUser.getId()))
                 .thenReturn(updatedSubscription);
 
         // Act & Assert
         mockMvc.perform(RestDocumentationRequestBuilders.post("/api/v1/subscriptions/{uuid}/unsubscribe", subscriptionUuid)
-                        .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities())))
-                        .with(csrf().asHeader())
+                        .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(subscriptionUuid.toString()))
@@ -314,6 +335,9 @@ class SubscriptionEntityRestControllerTest {
                 .andDo(document("subscriptionEntity-unsubscribe",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         pathParameters(
                                 parameterWithName("uuid").description("UUID of the subscriptionEntity to update")
                         ),

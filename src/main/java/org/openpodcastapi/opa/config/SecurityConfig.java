@@ -25,14 +25,32 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
+    private final String[] publicPages = {
+            "/",
+            "/login",
+            "/logout-confirm",
+            "/register",
+            "/docs",
+            "/docs/**",
+            "/css/**",
+            "/js/**",
+            "/images/**",
+            "/favicon.ico",
+    };
+
+    private final String[] publicEndpoints = {
+            "/api/auth/**"
+    };
+
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/docs", "/docs/**"))
                 .sessionManagement(sm -> sm
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/logout-confirm", "/register", "/docs**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/api/auth/**").permitAll()
+                        .requestMatchers(publicPages).permitAll()
+                        .requestMatchers(publicEndpoints).permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

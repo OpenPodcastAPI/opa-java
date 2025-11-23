@@ -15,7 +15,8 @@ The `auth` endpoint exposes operations for authenticating against the API.
 POST /api/auth/login
 ----
 
-Authenticates a user with `username` and `password`. These values must match the values of the user's account.
+Authenticates a user with `username` and `password`.
+These values must match the values of the user's account.
 
 operation::auth-token[snippets='request-fields,curl-request,response-fields,http-response']
 

@@ -1,4 +1,4 @@
-package org.openpodcastapi.opa.ui.controller;
+package org.openpodcastapi.opa.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

@@ -4,7 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.openpodcastapi.opa.config.JwtService;
+import org.openpodcastapi.opa.security.JwtService;
 import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;

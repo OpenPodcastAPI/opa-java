@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry
                 .addResourceHandler("/docs/**")
-                .addResourceLocations("classpath:/docs/");
+                .addResourceLocations("classpath:/static/docs/");
     }
 
     @Bean

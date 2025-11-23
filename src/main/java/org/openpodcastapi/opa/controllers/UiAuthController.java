@@ -1,4 +1,4 @@
-package org.openpodcastapi.opa.ui.controller;
+package org.openpodcastapi.opa.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

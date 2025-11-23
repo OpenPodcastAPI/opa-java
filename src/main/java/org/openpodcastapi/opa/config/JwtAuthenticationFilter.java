@@ -68,12 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, @Nonnull HttpServletResponse res, @Nonnull FilterChain chain)
             throws ServletException, IOException {
 
-        // Don't apply the check on the auth endpoints
-        if (req.getRequestURI().startsWith("/api/auth/") || req.getRequestURI().startsWith("/docs")) {
-            chain.doFilter(req, res);
-            return;
-        }
-
         String header = req.getHeader(HttpHeaders.AUTHORIZATION);
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 

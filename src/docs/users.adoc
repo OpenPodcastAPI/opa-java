@@ -2,28 +2,11 @@
 :doctype: book
 :sectlinks:
 
-The `users` endpoint exposes operations taken on user accounts. Users may update and delete their own user record, but only admins may update and alter the records of other users.
+The `users` endpoint exposes operations taken on user accounts.
+Users may update and delete their own user record, but only admins may update and alter the records of other users.
 
 [[actions-users]]
 == Actions
-
-[[actions-users-create]]
-=== Create a user
-
-[source,httprequest]
-----
-POST /api/v1/users
-----
-
-Creates a new user in the system.
-
-operation::users-create[snippets='request-fields,curl-request,response-fields,http-response']
-
-==== Invalid fields
-
-Passing an invalid field (such as an improperly formatted email address) throws a validation error.
-
-operation::users-create-bad-request[snippets='curl-request,http-response']
 
 [[actions-users-get]]
 === Get all users
@@ -34,5 +17,6 @@ GET /api/v1/users
 ----
 
 Fetches a paginated list of users from the system.
+This action is restricted to users with `ADMIN` permissions.
 
-operation::users-list[snippets='curl-request,response-fields,http-response']
+operation::users-list[snippets='request-headers,query-parameters,curl-request,response-fields,http-response']

@@ -1,4 +1,4 @@
-package org.openpodcastapi.opa.config;
+package org.openpodcastapi.opa.security;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

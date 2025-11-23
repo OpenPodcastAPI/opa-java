@@ -2,6 +2,7 @@ package org.openpodcastapi.opa.user;
 
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
+import org.openpodcastapi.opa.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,10 +18,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -40,12 +45,33 @@ class UserRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private TokenService tokenService;
+
+    @MockitoBean
+    private UserRepository userRepository;
+
     @MockitoBean
     private UserService userService;
 
     @Test
-    @WithMockUser(roles = {"USER", "ADMIN"})
+    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void getAllUsers_shouldReturn200_andList() throws Exception {
+        UserEntity mockUser = UserEntity
+                .builder()
+                .id(1L)
+                .uuid(UUID.randomUUID())
+                .username("admin")
+                .email("admin@test.test")
+                .userRoles(Set.of(UserRoles.USER, UserRoles.ADMIN))
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+
+        String accessToken = tokenService.generateAccessToken(mockUser);
+
         final Instant createdDate = Instant.now();
 
         final UserDTO.UserResponseDTO user1 = new UserDTO.UserResponseDTO(
@@ -70,6 +96,7 @@ class UserRestControllerTest {
 
         // Perform the test for the admin role
         mockMvc.perform(get("/api/v1/users")
+                        .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON)
                         .param("page", "0")
                         .param("size", "20"))
@@ -77,6 +104,9 @@ class UserRestControllerTest {
                 .andDo(document("users-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("Authorization").description("The access token used to authenticate the user")
+                        ),
                         queryParameters(
                                 parameterWithName("page").description("The page number to fetch").optional(),
                                 parameterWithName("size").description("The number of results to include on each page").optional()
@@ -99,10 +129,26 @@ class UserRestControllerTest {
     }
 
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(username = "user", roles = "USER")
         // Mock the userEntity with a "USER" role
     void getAllUsers_shouldReturn403_forUserRole() throws Exception {
+        UserEntity mockUser = UserEntity
+                .builder()
+                .id(1L)
+                .uuid(UUID.randomUUID())
+                .username("user")
+                .email("user@test.test")
+                .userRoles(Set.of(UserRoles.USER))
+                .createdAt(Instant.now())
+                .updatedAt(Instant.now())
+                .build();
+
+        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+
+        String accessToken = tokenService.generateAccessToken(mockUser);
+
         mockMvc.perform(get("/api/v1/users")
+                        .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON)
                         .param("page", "0")
                         .param("size", "20"))
