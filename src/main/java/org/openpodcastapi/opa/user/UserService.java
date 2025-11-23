@@ -24,7 +24,7 @@ public class UserService {
     /// Persists a user to the database
     ///
     /// @param dto the [UserDTO.CreateUserDTO] for the user
-    /// @return the formatted DTO representation of the user
+    /// @return the formatted [UserDTO.UserResponseDTO] representation of the user
     /// @throws DataIntegrityViolationException if a user with a matching username or email address exists already
     @Transactional
     public UserDTO.UserResponseDTO createAndPersistUser(UserDTO.CreateUserDTO dto) throws DataIntegrityViolationException {
@@ -55,7 +55,7 @@ public class UserService {
 
     /// Deletes a user from the database
     ///
-    /// @param uuid the UUID of the user to delete
+    /// @param uuid the [UUID] of the user to delete
     /// @return a success message
     /// @throws EntityNotFoundException if no matching record is found
     @Transactional

@@ -46,7 +46,7 @@ public class TokenService {
         return Long.parseLong(jwtExpiration);
     }
 
-    /// Generates an access token for a given userEntity
+    /// Generates an access token for a given user
     ///
     /// @param userEntity the [UserEntity] to generate a token for
     /// @return the generated token
@@ -61,7 +61,7 @@ public class TokenService {
                 .compact();
     }
 
-    /// Generates a refresh token for a given userEntity
+    /// Generates a refresh token for a given user
     ///
     /// @param userEntity the [UserEntity] to generate a refresh token for
     /// @return the generated refresh token
@@ -80,13 +80,13 @@ public class TokenService {
         return raw;
     }
 
-    /// Validates the refresh token for a userEntity and updates its expiry time
+    /// Validates the refresh token for a user and updates its expiry time
     ///
     /// @param rawToken   the raw token to validate
     /// @param userEntity the [UserEntity] to validate the token for
     /// @return the validated [UserEntity]
     public UserEntity validateRefreshToken(String rawToken, UserEntity userEntity) {
-        // Only fetch refresh tokens for the requesting userEntity
+        // Only fetch refresh tokens for the requesting user
         for (RefreshTokenEntity token : repository.findAllByUser(userEntity)) {
             // Check that the raw token and the token hash match and the token is not expired
             if (passwordEncoder.matches(rawToken, token.getTokenHash()) &&
@@ -95,7 +95,7 @@ public class TokenService {
                 token.setExpiresAt(Instant.now().plusSeconds(refreshTokenDays * 24 * 3600));
                 RefreshTokenEntity updatedToken = repository.save(token);
 
-                // Return the userEntity to confirm the token is valid
+                // Return the user to confirm the token is valid
                 return updatedToken.getUser();
             }
         }

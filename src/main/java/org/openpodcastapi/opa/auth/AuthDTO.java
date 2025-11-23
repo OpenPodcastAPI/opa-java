@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 /// All data transfer objects for auth methods
 public class AuthDTO {
-    /// A DTO representing an API login request
+    /// A DTO representing an api login request
     ///
     /// @param username the user's username
     /// @param password the user's password
@@ -15,7 +15,7 @@ public class AuthDTO {
     ) {
     }
 
-    /// A DTO representing a successful API authentication attempt
+    /// A DTO representing a successful api authentication attempt
     ///
     /// @param accessToken  the access token to be used to authenticate
     /// @param expiresIn    the TTL of the access token (in seconds)

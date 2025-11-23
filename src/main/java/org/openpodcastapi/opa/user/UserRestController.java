@@ -17,6 +17,10 @@ import java.util.UUID;
 public class UserRestController {
     private final UserService service;
 
+    /// Returns all users
+    ///
+    /// @param pageable the [Pageable] options used for pagination
+    /// @return a [ResponseEntity] containing [UserDTO.UserPageDTO] objects
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
@@ -26,6 +30,10 @@ public class UserRestController {
         return new ResponseEntity<>(UserDTO.UserPageDTO.fromPage(users), HttpStatus.OK);
     }
 
+    /// Creates a new user in the system
+    ///
+    /// @param request a [UserDTO.CreateUserDTO] request body
+    /// @return a [ResponseEntity] containing [UserDTO.UserResponseDTO] objects
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserDTO.UserResponseDTO> createUser(@RequestBody @Validated UserDTO.CreateUserDTO request) {
@@ -36,6 +44,10 @@ public class UserRestController {
         return new ResponseEntity<>(dto, HttpStatus.CREATED);
     }
 
+    /// Fetch a specific user by UUID
+    ///
+    /// @param uuid the [UUID] of the user
+    /// @return a [ResponseEntity] containing a summary of the action
     @DeleteMapping("/{uuid}")
     @PreAuthorize("hasRole('ADMIN') or #uuid == principal.uuid")
     public ResponseEntity<String> deleteUser(@PathVariable String uuid) {

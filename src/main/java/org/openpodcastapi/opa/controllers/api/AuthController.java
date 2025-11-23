@@ -1,9 +1,10 @@
-package org.openpodcastapi.opa.auth;
+package org.openpodcastapi.opa.controllers.api;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.openpodcastapi.opa.auth.AuthDTO;
 import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
@@ -19,11 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-public class ApiAuthController {
+public class AuthController {
     private final TokenService tokenService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
 
+    // === Login endpoint ===
     @PostMapping("/api/auth/login")
     public ResponseEntity<AuthDTO.LoginSuccessResponse> login(@RequestBody @NotNull AuthDTO.LoginRequest loginRequest) {
         // Set the authentication using the provided details
@@ -47,6 +49,7 @@ public class ApiAuthController {
         return ResponseEntity.ok(response);
     }
 
+    // === Refresh token endpoint ===
     @PostMapping("/api/auth/refresh")
     public ResponseEntity<AuthDTO.RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
         UserEntity targetUserEntity = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));

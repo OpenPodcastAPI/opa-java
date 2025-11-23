@@ -22,12 +22,12 @@ import java.util.UUID;
 public class SubscriptionRestController {
     private final SubscriptionService service;
 
-    /// Returns all subscriptions for a given userEntity
+    /// Returns all subscriptions for a given user
     ///
-    /// @param user                the [CustomUserDetails] of the authenticated userEntity
+    /// @param user                the [CustomUserDetails] of the authenticated user
     /// @param pageable            the [Pageable] pagination object
     /// @param includeUnsubscribed whether to include unsubscribed feeds in the response
-    /// @return a paginated list of subscriptions
+    /// @return a [ResponseEntity] containing [SubscriptionDTO.SubscriptionPageDTO] objects
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
@@ -46,10 +46,10 @@ public class SubscriptionRestController {
         return new ResponseEntity<>(SubscriptionDTO.SubscriptionPageDTO.fromPage(dto), HttpStatus.OK);
     }
 
-    /// Returns a single subscriptionEntity entry by UUID
+    /// Returns a single subscription entry by UUID
     ///
     /// @param uuid the UUID value to query for
-    /// @return the subscriptionEntity entity
+    /// @return a [ResponseEntity] containing a [SubscriptionDTO.UserSubscriptionDTO] object
     /// @throws EntityNotFoundException  if no entry is found
     /// @throws IllegalArgumentException if the UUID is improperly formatted
     @GetMapping("/{uuid}")
@@ -60,17 +60,17 @@ public class SubscriptionRestController {
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
         UUID uuidValue = UUID.fromString(uuid);
 
-        // Fetch the subscriptionEntity, throw an EntityNotFoundException if this fails
+        // Fetch the subscription, throw an EntityNotFoundException if this fails
         SubscriptionDTO.UserSubscriptionDTO dto = service.getUserSubscriptionBySubscriptionUuid(uuidValue, user.id());
 
         // Return the mapped subscriptionEntity entry
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    /// Updates the subscriptionEntity status of a subscriptionEntity for a given userEntity
+    /// Updates the subscription status of a subscription for a given user
     ///
-    /// @param uuid the UUID of the subscriptionEntity to update
-    /// @return the updated subscriptionEntity entity
+    /// @param uuid the UUID of the subscription to update
+    /// @return a [ResponseEntity] containing a [SubscriptionDTO.UserSubscriptionDTO] object
     /// @throws EntityNotFoundException  if no entry is found
     /// @throws IllegalArgumentException if the UUID is improperly formatted
     @PostMapping("/{uuid}/unsubscribe")
@@ -86,10 +86,10 @@ public class SubscriptionRestController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
-    /// Bulk creates UserSubscriptions for a userEntity. Creates new SubscriptionEntity objects if not already present
+    /// Bulk creates [UserSubscriptionEntity] objects for a user. Creates new [SubscriptionEntity] objects if not already present
     ///
     /// @param request a list of [SubscriptionDTO.SubscriptionCreateDTO] objects
-    /// @return a [SubscriptionDTO.BulkSubscriptionResponseDTO] object
+    /// @return a [ResponseEntity] containing a [SubscriptionDTO.BulkSubscriptionResponseDTO] object
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<SubscriptionDTO.BulkSubscriptionResponseDTO> createUserSubscriptions(@RequestBody List<SubscriptionDTO.SubscriptionCreateDTO> request, @AuthenticationPrincipal CustomUserDetails user) {

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class UserDTO {
-    /// A DTO representing a user response over the API
+    /// A DTO representing a user response over the api
     ///
     /// @param uuid      the UUID of the user
     /// @param username  the username of the user
