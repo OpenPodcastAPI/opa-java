@@ -3,6 +3,7 @@ package org.openpodcastapi.opa.config;
 import lombok.RequiredArgsConstructor;
 import org.openpodcastapi.opa.auth.JwtAccessDeniedHandler;
 import org.openpodcastapi.opa.auth.JwtAuthenticationEntryPoint;
+import org.openpodcastapi.opa.auth.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
