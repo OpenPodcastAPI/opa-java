@@ -1,58 +1,42 @@
-package org.openpodcastapi.opa.subscription.model;
+package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.openpodcastapi.opa.user.model.User;
 
 import java.time.Instant;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "user_subscription")
-public class UserSubscription {
+@Getter
+@Setter
+@Table(name = "subscriptions")
+public class SubscriptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Generated
     private Long id;
 
-    @Getter
-    @Setter
     @Column(unique = true, nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID uuid;
 
-    @Getter
-    @Setter
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private String feedUrl;
 
-    @Getter
-    @Setter
-    @ManyToOne
-    @JoinColumn(name = "subscription_id")
-    private Subscription subscription;
+    @OneToMany(mappedBy = "subscription")
+    private Set<UserSubscriptionEntity> subscribers;
 
-    @Getter
-    @Setter
-    @Column(columnDefinition = "boolean default true")
-    private Boolean isSubscribed;
-
-    @Getter
-    @Setter
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false, nullable = false)
     private Instant createdAt;
 
-    @Getter
-    @Setter
     @Column(nullable = false)
     private Instant updatedAt;
 
     @PrePersist
     public void prePersist() {
-        this.setUuid(UUID.randomUUID());
         final Instant timestamp = Instant.now();
         // Store the created date and set an updated timestamp
         this.setCreatedAt(timestamp);

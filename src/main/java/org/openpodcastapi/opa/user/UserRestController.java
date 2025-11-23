@@ -1,10 +1,6 @@
-package org.openpodcastapi.opa.user.controller;
+package org.openpodcastapi.opa.user;
 
 import lombok.RequiredArgsConstructor;
-import org.openpodcastapi.opa.user.dto.CreateUserDto;
-import org.openpodcastapi.opa.user.dto.UserDto;
-import org.openpodcastapi.opa.user.dto.UserPageDto;
-import org.openpodcastapi.opa.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -24,17 +20,17 @@ public class UserRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserPageDto> getAllUsers(Pageable pageable) {
-        Page<UserDto> users = service.getAllUsers(pageable);
+    public ResponseEntity<UserDTO.UserPageDTO> getAllUsers(Pageable pageable) {
+        Page<UserDTO.UserResponseDTO> users = service.getAllUsers(pageable);
 
-        return new ResponseEntity<>(UserPageDto.fromPage(users), HttpStatus.OK);
+        return new ResponseEntity<>(UserDTO.UserPageDTO.fromPage(users), HttpStatus.OK);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UserDto> createUser(@RequestBody @Validated CreateUserDto request) {
+    public ResponseEntity<UserDTO.UserResponseDTO> createUser(@RequestBody @Validated UserDTO.CreateUserDTO request) {
         // Create and persist the user
-        UserDto dto = service.createAndPersistUser(request);
+        UserDTO.UserResponseDTO dto = service.createAndPersistUser(request);
 
         // Return the user DTO with a `201` status.
         return new ResponseEntity<>(dto, HttpStatus.CREATED);

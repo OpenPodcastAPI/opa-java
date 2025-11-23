@@ -3,12 +3,9 @@ package org.openpodcastapi.opa.subscriptions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.service.CustomUserDetails;
-import org.openpodcastapi.opa.subscription.dto.BulkSubscriptionResponse;
-import org.openpodcastapi.opa.subscription.dto.SubscriptionCreateDto;
-import org.openpodcastapi.opa.subscription.dto.SubscriptionFailureDto;
-import org.openpodcastapi.opa.subscription.dto.UserSubscriptionDto;
-import org.openpodcastapi.opa.subscription.service.UserSubscriptionService;
-import org.openpodcastapi.opa.user.model.UserRoles;
+import org.openpodcastapi.opa.subscription.SubscriptionDTO;
+import org.openpodcastapi.opa.subscription.SubscriptionService;
+import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -47,7 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets")
-class SubscriptionRestControllerTest {
+class SubscriptionEntityRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -55,16 +52,16 @@ class SubscriptionRestControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private UserSubscriptionService subscriptionService;
+    private SubscriptionService subscriptionService;
 
     @Test
     @WithMockUser(username = "alice")
     void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
         CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", Set.of(UserRoles.USER));
 
-        UserSubscriptionDto sub1 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
-        UserSubscriptionDto sub2 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), true);
-        Page<UserSubscriptionDto> page = new PageImpl<>(List.of(sub1, sub2));
+        SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
+        SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), true);
+        Page<SubscriptionDTO.UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
 
         when(subscriptionService.getAllActiveSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
                 .thenReturn(page);
@@ -86,10 +83,10 @@ class SubscriptionRestControllerTest {
                                         .description("If true, includes unsubscribed feeds in the results. Defaults to false.")
                         ),
                         responseFields(
-                                fieldWithPath("subscriptions[].uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].feedUrl").description("The feed URL of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].createdAt").description("Creation timestamp of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].updatedAt").description("Last update timestamp of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("subscriptions[].uuid").description("The UUID of the subscriptionEntity").type(JsonFieldType.STRING),
+                                fieldWithPath("subscriptions[].feedUrl").description("The feed URL of the subscriptionEntity").type(JsonFieldType.STRING),
+                                fieldWithPath("subscriptions[].createdAt").description("Creation timestamp of the subscriptionEntity").type(JsonFieldType.STRING),
+                                fieldWithPath("subscriptions[].updatedAt").description("Last update timestamp of the subscriptionEntity").type(JsonFieldType.STRING),
                                 fieldWithPath("subscriptions[].isSubscribed").description("Whether the user is subscribed to the feed").type(JsonFieldType.BOOLEAN),
                                 fieldWithPath("page").description("Current page number").type(JsonFieldType.NUMBER),
                                 fieldWithPath("size").description("Size of the page").type(JsonFieldType.NUMBER),
@@ -110,9 +107,9 @@ class SubscriptionRestControllerTest {
                 Set.of(UserRoles.USER)
         );
 
-        UserSubscriptionDto sub1 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
-        UserSubscriptionDto sub2 = new UserSubscriptionDto(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), false);
-        Page<UserSubscriptionDto> page = new PageImpl<>(List.of(sub1, sub2));
+        SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
+        SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), false);
+        Page<SubscriptionDTO.UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
 
         when(subscriptionService.getAllSubscriptionsForUser(eq(user.id()), any(Pageable.class)))
                 .thenReturn(page);
@@ -133,22 +130,22 @@ class SubscriptionRestControllerTest {
         CustomUserDetails user = new CustomUserDetails(1L, UUID.randomUUID(), "alice", "alice@test.com", Set.of(UserRoles.USER));
         UUID subscriptionUuid = UUID.randomUUID();
 
-        UserSubscriptionDto sub = new UserSubscriptionDto(subscriptionUuid, "test.com/feed1", Instant.now(), Instant.now(), true);
+        SubscriptionDTO.UserSubscriptionDTO sub = new SubscriptionDTO.UserSubscriptionDTO(subscriptionUuid, "test.com/feed1", Instant.now(), Instant.now(), true);
         when(subscriptionService.getUserSubscriptionBySubscriptionUuid(subscriptionUuid, user.id()))
                 .thenReturn(sub);
 
         mockMvc.perform(get("/api/v1/subscriptions/{uuid}", subscriptionUuid)
                         .with(authentication(new UsernamePasswordAuthenticationToken(user, "password", user.getAuthorities()))))
                 .andExpect(status().isOk())
-                .andDo(document("subscription-get",
+                .andDo(document("subscriptionEntity-get",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         pathParameters(
-                                parameterWithName("uuid").description("UUID of the subscription to retrieve")
+                                parameterWithName("uuid").description("UUID of the subscriptionEntity to retrieve")
                         ),
                         responseFields(
-                                fieldWithPath("uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("feedUrl").description("The feed URL of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("uuid").description("The UUID of the subscriptionEntity").type(JsonFieldType.STRING),
+                                fieldWithPath("feedUrl").description("The feed URL of the subscriptionEntity").type(JsonFieldType.STRING),
                                 fieldWithPath("createdAt").description("Creation timestamp").type(JsonFieldType.STRING),
                                 fieldWithPath("updatedAt").description("Last update timestamp").type(JsonFieldType.STRING),
                                 fieldWithPath("isSubscribed").description("Whether the user is subscribed to the feed").type(JsonFieldType.BOOLEAN)
@@ -165,12 +162,12 @@ class SubscriptionRestControllerTest {
         final UUID goodFeedUUID = UUID.randomUUID();
         final String BAD_UUID = "62ad30ce-aac0-4f0a-a811";
 
-        SubscriptionCreateDto dto1 = new SubscriptionCreateDto(goodFeedUUID.toString(), "test.com/feed1");
-        SubscriptionCreateDto dto2 = new SubscriptionCreateDto(BAD_UUID, "test.com/feed2");
+        SubscriptionDTO.SubscriptionCreateDTO dto1 = new SubscriptionDTO.SubscriptionCreateDTO(goodFeedUUID.toString(), "test.com/feed1");
+        SubscriptionDTO.SubscriptionCreateDTO dto2 = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed2");
 
-        BulkSubscriptionResponse response = new BulkSubscriptionResponse(
-                List.of(new UserSubscriptionDto(goodFeedUUID, "test.com/feed1", timestamp, timestamp, true)),
-                List.of(new SubscriptionFailureDto(BAD_UUID, "test.com/feed2", "invalid UUID format"))
+        SubscriptionDTO.BulkSubscriptionResponseDTO response = new SubscriptionDTO.BulkSubscriptionResponseDTO(
+                List.of(new SubscriptionDTO.UserSubscriptionDTO(goodFeedUUID, "test.com/feed1", timestamp, timestamp, true)),
+                List.of(new SubscriptionDTO.SubscriptionFailureDTO(BAD_UUID, "test.com/feed2", "invalid UUID format"))
         );
 
         when(subscriptionService.addSubscriptions(anyList(), eq(user.id())))
@@ -186,15 +183,15 @@ class SubscriptionRestControllerTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
-                                fieldWithPath("[].uuid").description("The UUID of the subscription"),
-                                fieldWithPath("[].feedUrl").description("The feed URL of the subscription to create")
+                                fieldWithPath("[].uuid").description("The UUID of the subscriptionEntity"),
+                                fieldWithPath("[].feedUrl").description("The feed URL of the subscriptionEntity to create")
                         ),
                         responseFields(
                                 fieldWithPath("success[]").description("List of feed URLs successfully added").type(JsonFieldType.ARRAY),
                                 fieldWithPath("success[].uuid").description("The UUID of the feed").type(JsonFieldType.STRING),
                                 fieldWithPath("success[].feedUrl").description("The feed URL").type(JsonFieldType.STRING),
-                                fieldWithPath("success[].createdAt").description("The timestamp at which the subscription was created").type(JsonFieldType.STRING),
-                                fieldWithPath("success[].updatedAt").description("The timestamp at which the subscription was updated").type(JsonFieldType.STRING),
+                                fieldWithPath("success[].createdAt").description("The timestamp at which the subscriptionEntity was created").type(JsonFieldType.STRING),
+                                fieldWithPath("success[].updatedAt").description("The timestamp at which the subscriptionEntity was updated").type(JsonFieldType.STRING),
                                 fieldWithPath("success[].isSubscribed").description("Whether the user is subscribed to the feed").type(JsonFieldType.BOOLEAN),
                                 fieldWithPath("failure[]").description("List of feed URLs that failed to add").type(JsonFieldType.ARRAY),
                                 fieldWithPath("failure[].uuid").description("The UUID of the feed").type(JsonFieldType.STRING),
@@ -212,10 +209,10 @@ class SubscriptionRestControllerTest {
         final UUID goodFeedUUID = UUID.randomUUID();
         final Instant timestamp = Instant.now();
 
-        SubscriptionCreateDto dto = new SubscriptionCreateDto(goodFeedUUID.toString(), "test.com/feed1");
+        SubscriptionDTO.SubscriptionCreateDTO dto = new SubscriptionDTO.SubscriptionCreateDTO(goodFeedUUID.toString(), "test.com/feed1");
 
-        BulkSubscriptionResponse response = new BulkSubscriptionResponse(
-                List.of(new UserSubscriptionDto(goodFeedUUID, "test.com/feed1", timestamp, timestamp, true)),
+        SubscriptionDTO.BulkSubscriptionResponseDTO response = new SubscriptionDTO.BulkSubscriptionResponseDTO(
+                List.of(new SubscriptionDTO.UserSubscriptionDTO(goodFeedUUID, "test.com/feed1", timestamp, timestamp, true)),
                 List.of()
         );
 
@@ -232,15 +229,15 @@ class SubscriptionRestControllerTest {
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestFields(
-                                fieldWithPath("[].uuid").description("The UUID of the subscription"),
-                                fieldWithPath("[].feedUrl").description("The feed URL of the subscription to create")
+                                fieldWithPath("[].uuid").description("The UUID of the subscriptionEntity"),
+                                fieldWithPath("[].feedUrl").description("The feed URL of the subscriptionEntity to create")
                         ),
                         responseFields(
                                 fieldWithPath("success[]").description("List of feed URLs successfully added").type(JsonFieldType.ARRAY),
                                 fieldWithPath("success[].uuid").description("The UUID of the feed").type(JsonFieldType.STRING),
                                 fieldWithPath("success[].feedUrl").description("The feed URL").type(JsonFieldType.STRING),
-                                fieldWithPath("success[].createdAt").description("The timestamp at which the subscription was created").type(JsonFieldType.STRING),
-                                fieldWithPath("success[].updatedAt").description("The timestamp at which the subscription was updated").type(JsonFieldType.STRING),
+                                fieldWithPath("success[].createdAt").description("The timestamp at which the subscriptionEntity was created").type(JsonFieldType.STRING),
+                                fieldWithPath("success[].updatedAt").description("The timestamp at which the subscriptionEntity was updated").type(JsonFieldType.STRING),
                                 fieldWithPath("success[].isSubscribed").description("Whether the user is subscribed to the feed").type(JsonFieldType.BOOLEAN),
                                 fieldWithPath("failure[]").description("List of feed URLs that failed to add").type(JsonFieldType.ARRAY).ignored())));
     }
@@ -252,11 +249,11 @@ class SubscriptionRestControllerTest {
 
         final String BAD_UUID = "62ad30ce-aac0-4f0a-a811";
 
-        SubscriptionCreateDto dto = new SubscriptionCreateDto(BAD_UUID, "test.com/feed2");
+        SubscriptionDTO.SubscriptionCreateDTO dto = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed2");
 
-        BulkSubscriptionResponse response = new BulkSubscriptionResponse(
+        SubscriptionDTO.BulkSubscriptionResponseDTO response = new SubscriptionDTO.BulkSubscriptionResponseDTO(
                 List.of(),
-                List.of(new SubscriptionFailureDto(BAD_UUID, "test.com/feed2", "invalid UUID format"))
+                List.of(new SubscriptionDTO.SubscriptionFailureDTO(BAD_UUID, "test.com/feed2", "invalid UUID format"))
         );
 
         when(subscriptionService.addSubscriptions(anyList(), eq(user.id())))
@@ -294,7 +291,7 @@ class SubscriptionRestControllerTest {
         UUID subscriptionUuid = UUID.randomUUID();
         boolean newStatus = false;
 
-        UserSubscriptionDto updatedSubscription = new UserSubscriptionDto(
+        SubscriptionDTO.UserSubscriptionDTO updatedSubscription = new SubscriptionDTO.UserSubscriptionDTO(
                 subscriptionUuid,
                 "test.com/feed1",
                 Instant.now(),
@@ -314,18 +311,18 @@ class SubscriptionRestControllerTest {
                 .andExpect(jsonPath("$.uuid").value(subscriptionUuid.toString()))
                 .andExpect(jsonPath("$.feedUrl").value("test.com/feed1"))
                 .andExpect(jsonPath("$.isSubscribed").value(false))
-                .andDo(document("subscription-unsubscribe",
+                .andDo(document("subscriptionEntity-unsubscribe",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         pathParameters(
-                                parameterWithName("uuid").description("UUID of the subscription to update")
+                                parameterWithName("uuid").description("UUID of the subscriptionEntity to update")
                         ),
                         responseFields(
-                                fieldWithPath("uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("feedUrl").description("The feed URL of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("createdAt").description("When the subscription was created").type(JsonFieldType.STRING),
-                                fieldWithPath("updatedAt").description("When the subscription was last updated").type(JsonFieldType.STRING),
-                                fieldWithPath("isSubscribed").description("The updated subscription status").type(JsonFieldType.BOOLEAN)
+                                fieldWithPath("uuid").description("The UUID of the subscriptionEntity").type(JsonFieldType.STRING),
+                                fieldWithPath("feedUrl").description("The feed URL of the subscriptionEntity").type(JsonFieldType.STRING),
+                                fieldWithPath("createdAt").description("When the subscriptionEntity was created").type(JsonFieldType.STRING),
+                                fieldWithPath("updatedAt").description("When the subscriptionEntity was last updated").type(JsonFieldType.STRING),
+                                fieldWithPath("isSubscribed").description("The updated subscriptionEntity status").type(JsonFieldType.BOOLEAN)
                         )
                 ));
     }

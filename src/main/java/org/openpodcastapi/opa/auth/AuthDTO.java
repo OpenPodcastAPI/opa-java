@@ -3,8 +3,8 @@ package org.openpodcastapi.opa.auth;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 
-/// All DTOs for auth methods
-public class DTOs {
+/// All data transfer objects for auth methods
+public class AuthDTO {
     /// A DTO representing an API login request
     ///
     /// @param username the user's username
@@ -44,6 +44,16 @@ public class DTOs {
     public record RefreshTokenResponse(
             @JsonProperty(value = "accessToken", required = true) @NotNull String accessToken,
             @JsonProperty(value = "expiresIn", required = true) @NotNull String expiresIn
+    ) {
+    }
+
+    /// Displays an auth error
+    ///
+    /// @param error   the error message
+    /// @param message an additional description of the error
+    public record ErrorMessageDTO(
+            @JsonProperty(value = "error", required = true) @NotNull String error,
+            @JsonProperty(value = "message", required = true) @NotNull String message
     ) {
     }
 }

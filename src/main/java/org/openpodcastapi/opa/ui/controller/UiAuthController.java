@@ -3,8 +3,8 @@ package org.openpodcastapi.opa.ui.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.openpodcastapi.opa.user.dto.CreateUserDto;
-import org.openpodcastapi.opa.user.service.UserService;
+import org.openpodcastapi.opa.user.UserDTO;
+import org.openpodcastapi.opa.user.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,14 +41,14 @@ public class UiAuthController {
     // === Registration page ===
     @GetMapping("/register")
     public String getRegister(Model model) {
-        model.addAttribute(USER_REQUEST_ATTRIBUTE, new CreateUserDto("", "", ""));
+        model.addAttribute(USER_REQUEST_ATTRIBUTE, new UserDTO.CreateUserDTO("", "", ""));
         return REGISTER_TEMPLATE;
     }
 
     // === Registration POST handler ===
     @PostMapping("/register")
     public String processRegistration(
-            @Valid @ModelAttribute CreateUserDto createUserRequest,
+            @Valid @ModelAttribute UserDTO.CreateUserDTO createUserRequest,
             BindingResult result,
             Model model
     ) {

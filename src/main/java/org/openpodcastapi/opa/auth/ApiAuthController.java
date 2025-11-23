@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.config.JwtService;
 import org.openpodcastapi.opa.security.TokenService;
-import org.openpodcastapi.opa.user.model.User;
-import org.openpodcastapi.opa.user.repository.UserRepository;
+import org.openpodcastapi.opa.user.UserEntity;
+import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,7 +28,7 @@ public class ApiAuthController {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/api/auth/login")
-    public ResponseEntity<DTOs.LoginSuccessResponse> login(@RequestBody @NotNull DTOs.LoginRequest loginRequest) {
+    public ResponseEntity<AuthDTO.LoginSuccessResponse> login(@RequestBody @NotNull AuthDTO.LoginRequest loginRequest) {
         // Set the authentication using the provided details
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
@@ -38,30 +38,30 @@ public class ApiAuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Fetch the user record from the database
-        User user = userRepository.findByUsername(loginRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + loginRequest.username() + " found"));
+        UserEntity userEntity = userRepository.findByUsername(loginRequest.username()).orElseThrow(() -> new EntityNotFoundException("No userEntity with username " + loginRequest.username() + " found"));
 
         // Generate the access and refresh tokens for the user
-        String accessToken = tokenService.generateAccessToken(user);
-        String refreshToken = tokenService.generateRefreshToken(user);
+        String accessToken = tokenService.generateAccessToken(userEntity);
+        String refreshToken = tokenService.generateRefreshToken(userEntity);
 
         // Format the tokens and expiration time into a DTO
-        DTOs.LoginSuccessResponse response = new DTOs.LoginSuccessResponse(accessToken, refreshToken, String.valueOf(jwtService.getExpirationTime()));
+        AuthDTO.LoginSuccessResponse response = new AuthDTO.LoginSuccessResponse(accessToken, refreshToken, String.valueOf(jwtService.getExpirationTime()));
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/api/auth/refresh")
-    public ResponseEntity<DTOs.RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull DTOs.RefreshTokenRequest refreshTokenRequest) {
-        User targetUser = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
+    public ResponseEntity<AuthDTO.RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
+        UserEntity targetUserEntity = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
 
         // Validate the existing refresh token
-        User user = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUser);
+        UserEntity userEntity = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUserEntity);
 
         // Generate new access token
-        String newAccessToken = tokenService.generateAccessToken(user);
+        String newAccessToken = tokenService.generateAccessToken(userEntity);
 
         // Format the token and expiration time into a DTO
-        DTOs.RefreshTokenResponse response = new DTOs.RefreshTokenResponse(newAccessToken, String.valueOf(jwtService.getExpirationTime()));
+        AuthDTO.RefreshTokenResponse response = new AuthDTO.RefreshTokenResponse(newAccessToken, String.valueOf(jwtService.getExpirationTime()));
 
         return ResponseEntity.ok(response);
     }
