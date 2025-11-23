@@ -93,7 +93,7 @@ public class TokenService {
                     token.getExpiresAt().isAfter(Instant.now())) {
                 // Update the expiry date on the refresh token
                 token.setExpiresAt(Instant.now().plusSeconds(refreshTokenDays * 24 * 3600));
-                RefreshTokenEntity updatedToken = repository.save(token);
+                final RefreshTokenEntity updatedToken = repository.save(token);
 
                 // Return the user to confirm the token is valid
                 return updatedToken.getUser();

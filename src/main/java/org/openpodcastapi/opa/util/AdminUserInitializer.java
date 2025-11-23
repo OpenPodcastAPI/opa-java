@@ -33,12 +33,12 @@ public class AdminUserInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (userRepository.getUserByUsername(username).isEmpty()) {
-            UserEntity admin = new UserEntity();
-            admin.setUsername(username);
-            admin.setEmail(email);
-            admin.setPassword(encoder.encode(password));
-            admin.setUserRoles(Set.of(UserRoles.ADMIN, UserRoles.USER));
-            userRepository.save(admin);
+            final var adminUserEntity = new UserEntity();
+            adminUserEntity.setUsername(username);
+            adminUserEntity.setEmail(email);
+            adminUserEntity.setPassword(encoder.encode(password));
+            adminUserEntity.setUserRoles(Set.of(UserRoles.ADMIN, UserRoles.USER));
+            userRepository.save(adminUserEntity);
 
             log.info("✅ Admin user created: {} / {}", username, password);
         }

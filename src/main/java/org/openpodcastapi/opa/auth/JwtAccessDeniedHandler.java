@@ -27,7 +27,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         // Set content type to JSON
         response.setContentType("application/json");
 
-        AuthDTO.ErrorMessageDTO message = new AuthDTO.ErrorMessageDTO("Forbidden", "You do not have permission to access this resource");
+        final var message = new AuthDTO.ErrorMessageDTO("Forbidden", "You do not have permission to access this resource");
 
         response.getWriter().write(objectMapper.writeValueAsString(message));
     }
