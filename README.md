@@ -12,4 +12,4 @@ This server is intended as a reference implementation for testing purposes and e
 
 This server is a work in progress.
 It will be updated as new specs are created.
-At the current time, the server supports only simple user registration and subscriptionEntity management.
+At the current time, the server supports only simple user registration and subscription management.
