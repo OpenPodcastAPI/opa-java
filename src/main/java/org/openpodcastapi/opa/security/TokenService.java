@@ -33,9 +33,17 @@ public class TokenService {
     @Value("${jwt.refresh-days:7}")
     private long refreshTokenDays;
 
+    @Value("${jwt.ttl}")
+    private String jwtExpiration;
+
     // The calculated secret key
     private SecretKey key() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /// Returns the expiration time for JWTs
+    public long getExpirationTime() {
+        return Long.parseLong(jwtExpiration);
     }
 
     /// Generates an access token for a given userEntity

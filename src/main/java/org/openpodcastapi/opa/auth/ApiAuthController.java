@@ -4,7 +4,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.openpodcastapi.opa.security.JwtService;
 import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Log4j2
 public class ApiAuthController {
-
-    private final JwtService jwtService;
     private final TokenService tokenService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -45,7 +42,7 @@ public class ApiAuthController {
         String refreshToken = tokenService.generateRefreshToken(userEntity);
 
         // Format the tokens and expiration time into a DTO
-        AuthDTO.LoginSuccessResponse response = new AuthDTO.LoginSuccessResponse(accessToken, refreshToken, String.valueOf(jwtService.getExpirationTime()));
+        AuthDTO.LoginSuccessResponse response = new AuthDTO.LoginSuccessResponse(accessToken, refreshToken, String.valueOf(tokenService.getExpirationTime()));
 
         return ResponseEntity.ok(response);
     }
@@ -61,7 +58,7 @@ public class ApiAuthController {
         String newAccessToken = tokenService.generateAccessToken(userEntity);
 
         // Format the token and expiration time into a DTO
-        AuthDTO.RefreshTokenResponse response = new AuthDTO.RefreshTokenResponse(newAccessToken, String.valueOf(jwtService.getExpirationTime()));
+        AuthDTO.RefreshTokenResponse response = new AuthDTO.RefreshTokenResponse(newAccessToken, String.valueOf(tokenService.getExpirationTime()));
 
         return ResponseEntity.ok(response);
     }
