@@ -21,8 +21,9 @@ import java.util.List;
 public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
-        return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException error) {
+        log.debug("{}", error.getMessage());
+        return ResponseEntity.notFound().build();
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

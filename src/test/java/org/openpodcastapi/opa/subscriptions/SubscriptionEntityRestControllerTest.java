@@ -1,6 +1,7 @@
 package org.openpodcastapi.opa.subscriptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.TokenService;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -86,6 +86,14 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
+    void getAllSubscriptionsForAnonymous_shouldReturn401() throws Exception {
+        mockMvc.perform(get("/api/v1/subscriptions")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @WithMockUser(username = "user")
     void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
         SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
@@ -150,6 +158,24 @@ class SubscriptionEntityRestControllerTest {
                         preprocessResponse(prettyPrint())));
     }
 
+    @Test
+    void getSubscriptionByUuidForAnonymous_shouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(get("/api/v1/subscriptions/{uuid}", UUID.randomUUID())
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "test")
+    void getNonexistentSubscription_shouldReturnNotFound() throws Exception {
+        when(subscriptionService.getUserSubscriptionBySubscriptionUuid(any(UUID.class), anyLong()))
+                .thenThrow(new EntityNotFoundException());
+
+        mockMvc.perform(get("/api/v1/subscriptions/{uuid}", UUID.randomUUID())
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isNotFound());
+    }
 
     @Test
     @WithMockUser(username = "user")
@@ -180,6 +206,22 @@ class SubscriptionEntityRestControllerTest {
                                 fieldWithPath("isSubscribed").description("Whether the user is subscribed to the feed").type(JsonFieldType.BOOLEAN)
                         )
                 ));
+    }
+
+    @Test
+    void createUserSubscriptionWithAnonymousUser_shouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/v1/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void createUserSubscriptionsWithoutBody_shouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/api/v1/subscriptions")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -308,8 +350,27 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
+    void unsubscribingWithAnonymousUser_shouldReturnUnauthorized() throws Exception {
+        mockMvc.perform(post("/api/v1/subscriptions/{uuid}/unsubscribe", UUID.randomUUID())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @WithMockUser(username = "user")
-    void updateSubscriptionStatus_shouldReturnUpdatedSubscription() throws Exception {
+    void unsubscribingNonexistentEntity_shouldReturnNotFound() throws Exception {
+        when(subscriptionService.unsubscribeUserFromFeed(any(UUID.class), anyLong()))
+                .thenThrow(new EntityNotFoundException());
+
+        mockMvc.perform(post("/api/v1/subscriptions/{uuid}/unsubscribe", UUID.randomUUID())
+                        .header("Authorization", "Bearer " + accessToken)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "user")
+    void unsubscribe_shouldReturnUpdatedSubscription() throws Exception {
         UUID subscriptionUuid = UUID.randomUUID();
         boolean newStatus = false;
 
@@ -325,7 +386,7 @@ class SubscriptionEntityRestControllerTest {
                 .thenReturn(updatedSubscription);
 
         // Act & Assert
-        mockMvc.perform(RestDocumentationRequestBuilders.post("/api/v1/subscriptions/{uuid}/unsubscribe", subscriptionUuid)
+        mockMvc.perform(post("/api/v1/subscriptions/{uuid}/unsubscribe", subscriptionUuid)
                         .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

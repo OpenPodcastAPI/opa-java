@@ -55,6 +55,13 @@ class UserRestControllerTest {
     private UserService userService;
 
     @Test
+    void getAllUsers_shouldReturn401_forAnonymousUser() throws Exception {
+        mockMvc.perform(get("/api/v1/users")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void getAllUsers_shouldReturn200_andList() throws Exception {
         UserEntity mockUser = UserEntity
@@ -130,7 +137,6 @@ class UserRestControllerTest {
 
     @Test
     @WithMockUser(username = "user", roles = "USER")
-        // Mock the userEntity with a "USER" role
     void getAllUsers_shouldReturn403_forUserRole() throws Exception {
         UserEntity mockUser = UserEntity
                 .builder()
@@ -152,7 +158,7 @@ class UserRestControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .param("page", "0")
                         .param("size", "20"))
-                .andExpect(status().isForbidden()) // Expect 403 for the userEntity role
+                .andExpect(status().isForbidden())
                 .andDo(document("users-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
