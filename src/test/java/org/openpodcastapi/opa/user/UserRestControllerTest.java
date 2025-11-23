@@ -2,8 +2,6 @@ package org.openpodcastapi.opa.user;
 
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
-import org.openpodcastapi.opa.user.dto.UserDto;
-import org.openpodcastapi.opa.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -50,7 +48,7 @@ class UserRestControllerTest {
     void getAllUsers_shouldReturn200_andList() throws Exception {
         final Instant createdDate = Instant.now();
 
-        final UserDto user1 = new UserDto(
+        final UserDTO.UserResponseDTO user1 = new UserDTO.UserResponseDTO(
                 UUID.randomUUID(),
                 "alice",
                 "alice@test.com",
@@ -58,7 +56,7 @@ class UserRestControllerTest {
                 createdDate
         );
 
-        final UserDto user2 = new UserDto(
+        final UserDTO.UserResponseDTO user2 = new UserDTO.UserResponseDTO(
                 UUID.randomUUID(),
                 "bob",
                 "bob@test.com",
@@ -67,7 +65,7 @@ class UserRestControllerTest {
         );
 
         // Mock the service call to return users
-        PageImpl<UserDto> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
+        PageImpl<UserDTO.UserResponseDTO> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
         when(userService.getAllUsers(any())).thenReturn(page);
 
         // Perform the test for the admin role

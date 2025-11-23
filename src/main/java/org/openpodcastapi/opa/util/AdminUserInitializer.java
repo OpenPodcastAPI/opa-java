@@ -2,9 +2,9 @@ package org.openpodcastapi.opa.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.openpodcastapi.opa.user.model.User;
-import org.openpodcastapi.opa.user.model.UserRoles;
-import org.openpodcastapi.opa.user.repository.UserRepository;
+import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserRoles;
+import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

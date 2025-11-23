@@ -1,6 +1,6 @@
 package org.openpodcastapi.opa.security;
 
-import org.openpodcastapi.opa.user.model.User;
+import org.openpodcastapi.opa.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

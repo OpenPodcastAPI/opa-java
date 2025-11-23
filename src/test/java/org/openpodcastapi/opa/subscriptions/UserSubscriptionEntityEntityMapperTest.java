@@ -3,13 +3,8 @@ package org.openpodcastapi.opa.subscriptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openpodcastapi.opa.config.JwtAuthenticationFilter;
-import org.openpodcastapi.opa.subscription.dto.UserSubscriptionDto;
-import org.openpodcastapi.opa.subscription.mapper.UserSubscriptionMapper;
-import org.openpodcastapi.opa.subscription.mapper.UserSubscriptionMapperImpl;
-import org.openpodcastapi.opa.subscription.model.Subscription;
-import org.openpodcastapi.opa.subscription.model.UserSubscription;
-import org.openpodcastapi.opa.subscription.repository.UserSubscriptionRepository;
-import org.openpodcastapi.opa.user.model.User;
+import org.openpodcastapi.opa.subscription.*;
+import org.openpodcastapi.opa.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserSubscriptionMapperImpl.class)
-class UserSubscriptionMapperTest {
+class UserSubscriptionEntityEntityMapperTest {
     @Autowired
     private UserSubscriptionMapper mapper;
 
@@ -32,7 +27,7 @@ class UserSubscriptionMapperTest {
     @MockitoBean
     private JwtAuthenticationFilter filter;
 
-    /// Tests that a [UserSubscription] entity maps to a [UserSubscriptionDto] representation
+    /// Tests that a [UserSubscriptionEntity] entity maps to a [SubscriptionDTO.UserSubscriptionDTO] representation
     @Test
     void testToDto() {
         final Instant timestamp = Instant.now();
@@ -45,30 +40,30 @@ class UserSubscriptionMapperTest {
                 .updatedAt(timestamp)
                 .build();
 
-        Subscription subscription = Subscription.builder()
+        SubscriptionEntity subscriptionEntity = SubscriptionEntity.builder()
                 .uuid(UUID.randomUUID())
                 .feedUrl("test.com/feed1")
                 .createdAt(timestamp)
                 .updatedAt(timestamp)
                 .build();
 
-        UserSubscription userSubscription = UserSubscription.builder()
+        UserSubscriptionEntity userSubscriptionEntity = UserSubscriptionEntity.builder()
                 .uuid(uuid)
                 .user(user)
-                .subscription(subscription)
+                .subscription(subscriptionEntity)
                 .isSubscribed(true)
                 .createdAt(timestamp)
                 .updatedAt(timestamp)
                 .build();
 
-        UserSubscriptionDto dto = mapper.toDto(userSubscription);
+        SubscriptionDTO.UserSubscriptionDTO dto = mapper.toDto(userSubscriptionEntity);
         assertNotNull(dto);
 
-        // The DTO should inherit the feed URL from the Subscription
-        assertEquals(subscription.getFeedUrl(), dto.feedUrl());
+        // The DTO should inherit the feed URL from the SubscriptionEntity
+        assertEquals(subscriptionEntity.getFeedUrl(), dto.feedUrl());
 
-        // The DTO should use the Subscription's UUID rather than the UserSubscription's
-        assertEquals(subscription.getUuid(), dto.uuid());
+        // The DTO should use the SubscriptionEntity's UUID rather than the UserSubscriptionEntity's
+        assertEquals(subscriptionEntity.getUuid(), dto.uuid());
         assertTrue(dto.isSubscribed());
     }
 }

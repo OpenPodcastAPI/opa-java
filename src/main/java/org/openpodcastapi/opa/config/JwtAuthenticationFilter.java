@@ -12,8 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.service.CustomUserDetails;
-import org.openpodcastapi.opa.user.model.User;
-import org.openpodcastapi.opa.user.repository.UserRepository;
+import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -69,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // Don't apply the check on the auth endpoints
-        if (req.getRequestURI().startsWith("/api/auth/")) {
+        if (req.getRequestURI().startsWith("/api/auth/") || req.getRequestURI().startsWith("/docs")) {
             chain.doFilter(req, res);
             return;
         }

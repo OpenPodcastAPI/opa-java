@@ -1,6 +1,6 @@
 package org.openpodcastapi.opa.service;
 
-import org.openpodcastapi.opa.user.model.UserRoles;
+import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

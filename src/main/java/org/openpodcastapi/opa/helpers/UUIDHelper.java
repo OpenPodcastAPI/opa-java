@@ -52,7 +52,7 @@ public class UUIDHelper {
         return generator.generate(sanitizedFeedUrl);
     }
 
-    /// Validates that a supplied subscription UUID has been calculated properly
+    /// Validates that a supplied subscriptionEntity UUID has been calculated properly
     ///
     /// @param feedUrl      the URL of the podcast feed
     /// @param suppliedUUID the UUID to validate

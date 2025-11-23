@@ -1,8 +1,8 @@
 package org.openpodcastapi.opa.service;
 
 import lombok.RequiredArgsConstructor;
-import org.openpodcastapi.opa.user.model.User;
-import org.openpodcastapi.opa.user.repository.UserRepository;
+import org.openpodcastapi.opa.user.User;
+import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

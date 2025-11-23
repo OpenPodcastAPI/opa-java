@@ -1,9 +1,7 @@
-package org.openpodcastapi.opa.subscription.mapper;
+package org.openpodcastapi.opa.subscription;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.openpodcastapi.opa.subscription.dto.SubscriptionCreateDto;
-import org.openpodcastapi.opa.subscription.model.Subscription;
 
 import java.util.UUID;
 
@@ -14,7 +12,7 @@ public interface SubscriptionMapper {
     @Mapping(target = "subscribers", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    Subscription toEntity(SubscriptionCreateDto dto);
+    SubscriptionEntity toEntity(SubscriptionDTO.SubscriptionCreateDTO dto);
 
     default UUID mapStringToUUID(String feedUUID) {
         return UUID.fromString(feedUUID);

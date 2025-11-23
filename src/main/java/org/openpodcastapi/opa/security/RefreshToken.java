@@ -2,7 +2,7 @@ package org.openpodcastapi.opa.security;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.openpodcastapi.opa.user.model.User;
+import org.openpodcastapi.opa.user.User;
 
 import java.time.Instant;
 

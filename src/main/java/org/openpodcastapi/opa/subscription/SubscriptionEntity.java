@@ -1,4 +1,4 @@
-package org.openpodcastapi.opa.subscription.model;
+package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,36 +11,27 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter
+@Setter
 @Table(name = "subscriptions")
-public class Subscription {
+public class SubscriptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Generated
-    @Getter
     private Long id;
 
-    @Getter
-    @Setter
     @Column(unique = true, nullable = false, updatable = false, columnDefinition = "uuid")
     private UUID uuid;
 
-    @Getter
-    @Setter
     @Column(nullable = false)
     private String feedUrl;
 
-    @Getter
-    @Setter
     @OneToMany(mappedBy = "subscription")
-    private Set<UserSubscription> subscribers;
+    private Set<UserSubscriptionEntity> subscribers;
 
-    @Getter
-    @Setter
     @Column(updatable = false, nullable = false)
     private Instant createdAt;
 
-    @Getter
-    @Setter
     @Column(nullable = false)
     private Instant updatedAt;
 

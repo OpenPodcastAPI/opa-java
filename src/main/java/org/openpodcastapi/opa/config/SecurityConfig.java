@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/logout-confirm", "/register", "/docs", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/", "/login", "/logout-confirm", "/register", "/docs**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/api/auth/**").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -2,12 +2,6 @@ package org.openpodcastapi.opa.user;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.openpodcastapi.opa.user.dto.CreateUserDto;
-import org.openpodcastapi.opa.user.dto.UserDto;
-import org.openpodcastapi.opa.user.mapper.UserMapper;
-import org.openpodcastapi.opa.user.mapper.UserMapperImpl;
-import org.openpodcastapi.opa.user.model.User;
-import org.openpodcastapi.opa.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -27,7 +21,7 @@ class UserMapperSpringTest {
     @MockitoBean
     private UserRepository userRepository;
 
-    /// Tests that a [User] entity maps to a [UserDto] representation
+    /// Tests that a [User] entity maps to a [UserDTO.UserResponseDTO] representation
     @Test
     void testToDto() {
         final Instant timestamp = Instant.now();
@@ -40,7 +34,7 @@ class UserMapperSpringTest {
                 .updatedAt(timestamp)
                 .build();
 
-        UserDto dto = mapper.toDto(user);
+        UserDTO.UserResponseDTO dto = mapper.toDto(user);
         assertNotNull(dto);
         assertEquals(user.getUuid(), dto.uuid());
         assertEquals(user.getUsername(), dto.username());
@@ -49,10 +43,10 @@ class UserMapperSpringTest {
         assertEquals(user.getUpdatedAt(), dto.updatedAt());
     }
 
-    /// Tests that a [CreateUserDto] maps to a [User] entity
+    /// Tests that a [UserDTO.CreateUserDTO] maps to a [User] entity
     @Test
     void testToEntity() {
-        CreateUserDto dto = new CreateUserDto("test", "testPassword", "test@test.test");
+        UserDTO.CreateUserDTO dto = new UserDTO.CreateUserDTO("test", "testPassword", "test@test.test");
         User user = mapper.toEntity(dto);
 
         assertNotNull(user);

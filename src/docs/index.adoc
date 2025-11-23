@@ -8,5 +8,6 @@
 
 This server implements the https://openpodcastapi.org[Open Podcast API].
 
+include::auth.adoc[]
 include::users.adoc[]
 include::subscriptions.adoc[]
