@@ -5,11 +5,8 @@
 The `users` endpoint exposes operations taken on user accounts.
 Users may update and delete their own user record, but only admins may update and alter the records of other users.
 
-[[actions-users]]
-== Actions
-
 [[actions-users-get]]
-=== Get all users
+== Get all users
 
 [source,httprequest]
 ----
