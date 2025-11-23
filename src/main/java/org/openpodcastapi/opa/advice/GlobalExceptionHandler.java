@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
                 .map(fe -> new ValidationErrorResponse.FieldError(fe.getField(), fe.getDefaultMessage()))
                 .toList();
 
-        ValidationErrorResponse body = new ValidationErrorResponse(
+        var body = new ValidationErrorResponse(
                 Instant.now(),
                 HttpStatus.BAD_REQUEST.value(),
                 errors

@@ -37,14 +37,14 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Fetch the user record from the database
-        UserEntity userEntity = userRepository.findByUsername(loginRequest.username()).orElseThrow(() -> new EntityNotFoundException("No userEntity with username " + loginRequest.username() + " found"));
+        final var userEntity = userRepository.findByUsername(loginRequest.username()).orElseThrow(() -> new EntityNotFoundException("No userEntity with username " + loginRequest.username() + " found"));
 
         // Generate the access and refresh tokens for the user
-        String accessToken = tokenService.generateAccessToken(userEntity);
-        String refreshToken = tokenService.generateRefreshToken(userEntity);
+        final String accessToken = tokenService.generateAccessToken(userEntity);
+        final String refreshToken = tokenService.generateRefreshToken(userEntity);
 
         // Format the tokens and expiration time into a DTO
-        AuthDTO.LoginSuccessResponse response = new AuthDTO.LoginSuccessResponse(accessToken, refreshToken, String.valueOf(tokenService.getExpirationTime()));
+        final var response = new AuthDTO.LoginSuccessResponse(accessToken, refreshToken, String.valueOf(tokenService.getExpirationTime()));
 
         return ResponseEntity.ok(response);
     }
@@ -52,16 +52,16 @@ public class AuthController {
     // === Refresh token endpoint ===
     @PostMapping("/api/auth/refresh")
     public ResponseEntity<AuthDTO.RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
-        UserEntity targetUserEntity = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
+        final var targetUserEntity = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
 
         // Validate the existing refresh token
-        UserEntity userEntity = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUserEntity);
+        final UserEntity userEntity = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUserEntity);
 
         // Generate new access token
-        String newAccessToken = tokenService.generateAccessToken(userEntity);
+        final String newAccessToken = tokenService.generateAccessToken(userEntity);
 
         // Format the token and expiration time into a DTO
-        AuthDTO.RefreshTokenResponse response = new AuthDTO.RefreshTokenResponse(newAccessToken, String.valueOf(tokenService.getExpirationTime()));
+        final var response = new AuthDTO.RefreshTokenResponse(newAccessToken, String.valueOf(tokenService.getExpirationTime()));
 
         return ResponseEntity.ok(response);
     }

@@ -16,14 +16,14 @@ public class GlobalModelAttributeAdvice {
     @ModelAttribute
     public void addAuthenticationFlag(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAuthenticated = authentication != null && authentication.isAuthenticated()
+        var isAuthenticated = authentication != null && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal());
         model.addAttribute("isAuthenticated", isAuthenticated);
     }
 
     @ModelAttribute
     public void addUserDetails(Principal principal, Model model) {
-        String username = principal != null ? principal.getName() : "Guest";
+        var username = principal != null ? principal.getName() : "Guest";
         model.addAttribute("username", username);
     }
 }

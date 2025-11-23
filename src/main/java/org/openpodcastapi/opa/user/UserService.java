@@ -29,28 +29,28 @@ public class UserService {
     @Transactional
     public UserDTO.UserResponseDTO createAndPersistUser(UserDTO.CreateUserDTO dto) throws DataIntegrityViolationException {
         // If the user already exists in the system, throw an exception and return a `400` response.
-        if (repository.existsUserByEmail(dto.email()) || repository.existsUserByUsername(dto.username())) {
+        if (repository.existsUserByEmailOrUsername(dto.email(), dto.username())) {
             throw new DataIntegrityViolationException("User already exists");
         }
 
         // Create a new user with a hashed password and a default `USER` role.
-        UserEntity newUserEntity = mapper.toEntity(dto);
+        final var newUserEntity = mapper.toEntity(dto);
         newUserEntity.setPassword(passwordEncoder.encode(dto.password()));
         newUserEntity.getUserRoles().add(UserRoles.USER);
 
         // Save the user and return the DTO representation.
-        UserEntity persistedUserEntity = repository.save(newUserEntity);
+        final var persistedUserEntity = repository.save(newUserEntity);
         log.debug("persisted user {}", persistedUserEntity.getUuid());
         return mapper.toDto(persistedUserEntity);
     }
 
     @Transactional(readOnly = true)
     public Page<UserDTO.UserResponseDTO> getAllUsers(Pageable pageable) {
-        Page<UserEntity> users = repository.findAll(pageable);
+        final var paginatedUserDTO = repository.findAll(pageable);
 
-        log.debug("returning {} users", users.getTotalElements());
+        log.debug("returning {} users", paginatedUserDTO.getTotalElements());
 
-        return users.map(mapper::toDto);
+        return paginatedUserDTO.map(mapper::toDto);
     }
 
     /// Deletes a user from the database
@@ -59,8 +59,8 @@ public class UserService {
     /// @return a success message
     /// @throws EntityNotFoundException if no matching record is found
     @Transactional
-    public String deleteUser(UUID uuid) throws EntityNotFoundException {
-        UserEntity userEntity = repository.getUserByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+    public String deleteUserAndReturnMessage(UUID uuid) throws EntityNotFoundException {
+        final var userEntity = repository.getUserByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
 
         repository.delete(userEntity);
 

@@ -58,10 +58,10 @@ public class SubscriptionRestController {
     public ResponseEntity<SubscriptionDTO.UserSubscriptionDTO> getSubscriptionByUuid(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) throws EntityNotFoundException {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
-        UUID uuidValue = UUID.fromString(uuid);
+        final var uuidValue = UUID.fromString(uuid);
 
         // Fetch the subscription, throw an EntityNotFoundException if this fails
-        SubscriptionDTO.UserSubscriptionDTO dto = service.getUserSubscriptionBySubscriptionUuid(uuidValue, user.id());
+        final var dto = service.getUserSubscriptionBySubscriptionUuid(uuidValue, user.id());
 
         // Return the mapped subscriptionEntity entry
         return new ResponseEntity<>(dto, HttpStatus.OK);
@@ -79,9 +79,9 @@ public class SubscriptionRestController {
     public ResponseEntity<SubscriptionDTO.UserSubscriptionDTO> unsubscribeUserFromFeed(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
-        UUID uuidValue = UUID.fromString(uuid);
+        final var uuidValue = UUID.fromString(uuid);
 
-        SubscriptionDTO.UserSubscriptionDTO dto = service.unsubscribeUserFromFeed(uuidValue, user.id());
+        final var dto = service.unsubscribeUserFromFeed(uuidValue, user.id());
 
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
@@ -93,7 +93,7 @@ public class SubscriptionRestController {
     @PostMapping
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<SubscriptionDTO.BulkSubscriptionResponseDTO> createUserSubscriptions(@RequestBody List<SubscriptionDTO.SubscriptionCreateDTO> request, @AuthenticationPrincipal CustomUserDetails user) {
-        SubscriptionDTO.BulkSubscriptionResponseDTO response = service.addSubscriptions(request, user.id());
+        final var response = service.addSubscriptions(request, user.id());
 
         if (response.success().isEmpty() && !response.failure().isEmpty()) {
             // If all requests failed, return a 400 error

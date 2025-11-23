@@ -1,7 +1,6 @@
 package org.openpodcastapi.opa.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +24,9 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO.UserPageDTO> getAllUsers(Pageable pageable) {
-        Page<UserDTO.UserResponseDTO> users = service.getAllUsers(pageable);
+        final var paginatedUserResponse = service.getAllUsers(pageable);
 
-        return new ResponseEntity<>(UserDTO.UserPageDTO.fromPage(users), HttpStatus.OK);
+        return new ResponseEntity<>(UserDTO.UserPageDTO.fromPage(paginatedUserResponse), HttpStatus.OK);
     }
 
     /// Creates a new user in the system
@@ -38,10 +37,10 @@ public class UserRestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserDTO.UserResponseDTO> createUser(@RequestBody @Validated UserDTO.CreateUserDTO request) {
         // Create and persist the user
-        UserDTO.UserResponseDTO dto = service.createAndPersistUser(request);
+        final var userResponseDTO = service.createAndPersistUser(request);
 
         // Return the user DTO with a `201` status.
-        return new ResponseEntity<>(dto, HttpStatus.CREATED);
+        return new ResponseEntity<>(userResponseDTO, HttpStatus.CREATED);
     }
 
     /// Fetch a specific user by UUID
@@ -53,11 +52,11 @@ public class UserRestController {
     public ResponseEntity<String> deleteUser(@PathVariable String uuid) {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
-        UUID uuidValue = UUID.fromString(uuid);
+        final var uuidValue = UUID.fromString(uuid);
 
-        // Delete the user and return the status string
-        String status = service.deleteUser(uuidValue);
+        // Delete the user and return the message string
+        final var message = service.deleteUserAndReturnMessage(uuidValue);
 
-        return new ResponseEntity<>(status, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(message, HttpStatus.ACCEPTED);
     }
 }

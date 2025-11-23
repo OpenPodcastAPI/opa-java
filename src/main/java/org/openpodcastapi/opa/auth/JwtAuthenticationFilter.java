@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /// @throws EntityNotFoundException if no matching user is found
     private static UsernamePasswordAuthenticationToken getUsernamePasswordAuthenticationToken(UserEntity userEntity) throws EntityNotFoundException {
         // Create a new CustomUserDetails entity with the fetched user
-        CustomUserDetails userDetails =
+        final var userDetails =
                 new CustomUserDetails(userEntity.getId(),
                         userEntity.getUuid(),
                         userEntity.getUsername(),
@@ -68,8 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, @Nonnull HttpServletResponse res, @Nonnull FilterChain chain)
             throws ServletException, IOException {
 
-        String header = req.getHeader(HttpHeaders.AUTHORIZATION);
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        final String header = req.getHeader(HttpHeaders.AUTHORIZATION);
+        final SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
 
         // If the value is missing or is not a valid bearer token, filter the response
         if (header == null || !header.startsWith("Bearer ")) {
@@ -78,25 +78,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // Check that a valid Bearer token is in the headers
-        String token = header.substring(7);
+        final var token = header.substring(7);
 
         try {
             // Extract the claims from the JWT
-            Claims claims = Jwts.parser()
+            final Claims claims = Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
 
             // Extract the user's UUID from the claims
-            String userUuid = claims.getSubject();
-            UUID parsedUuid = UUID.fromString(userUuid);
+            final var parsedUuid = UUID.fromString(claims.getSubject());
 
             // Fetch the matching user
-            UserEntity userEntity = repository.getUserByUuid(parsedUuid).orElseThrow(() -> new EntityNotFoundException("No matching user found"));
+            final var userEntity = repository.getUserByUuid(parsedUuid).orElseThrow(() -> new EntityNotFoundException("No matching user found"));
 
             // Create a user
-            UsernamePasswordAuthenticationToken authentication = getUsernamePasswordAuthenticationToken(userEntity);
+            final UsernamePasswordAuthenticationToken authentication = getUsernamePasswordAuthenticationToken(userEntity);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {
