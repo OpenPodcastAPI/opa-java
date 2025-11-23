@@ -48,7 +48,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/api/**", "/docs", "/docs/**"))
                 .sessionManagement(sm -> sm
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)) // Stateless session
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(publicPages).permitAll()
                         .requestMatchers(publicEndpoints).permitAll()
