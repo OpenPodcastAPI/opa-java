@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.openpodcastapi.opa.subscription.UserSubscriptionEntity;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity {
+public class UserEntity implements Serializable {
 
     @Id
     @Generated
@@ -37,7 +38,7 @@ public class UserEntity {
     private String email;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private Set<UserSubscriptionEntity> subscriptions;
+    private transient Set<UserSubscriptionEntity> subscriptions;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default

@@ -28,13 +28,11 @@ spring:
       port: "${REDIS_PORT}"
       username: "${REDIS_USERNAME:redis}"
       password: "${REDIS_PASSWORD:changeme}"
-  cache:
-    type: redis
   session:
     timeout: 7d
-    redis:
-      namespace: "spring:session"
-      flush-mode: on_save
+    data:
+      redis:
+        flush-mode: on_save
 
 server:
   port: 8080

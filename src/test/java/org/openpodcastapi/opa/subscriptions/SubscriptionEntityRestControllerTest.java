@@ -2,6 +2,7 @@ package org.openpodcastapi.opa.subscriptions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.TokenService;
@@ -11,9 +12,9 @@ import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -98,7 +99,7 @@ class SubscriptionEntityRestControllerTest {
     void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
         SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
         SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), true);
-        Page<SubscriptionDTO.UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
+        Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
 
         when(subscriptionService.getAllActiveSubscriptionsForUser(eq(mockUser.getId()), any(Pageable.class)))
                 .thenReturn(page);
@@ -144,7 +145,7 @@ class SubscriptionEntityRestControllerTest {
     void getAllSubscriptionsForUser_shouldIncludeUnsubscribedWhenRequested() throws Exception {
         SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), true);
         SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), false);
-        Page<SubscriptionDTO.UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
+        Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
 
         when(subscriptionService.getAllSubscriptionsForUser(eq(mockUser.getId()), any(Pageable.class)))
                 .thenReturn(page);

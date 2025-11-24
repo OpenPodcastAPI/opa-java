@@ -3,6 +3,7 @@ package org.openpodcastapi.opa.user;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
@@ -46,7 +47,7 @@ public class UserDTO {
             int numberOfElements,
             int size
     ) {
-        public static UserPageDTO fromPage(Page<UserResponseDTO> page) {
+        public static UserPageDTO fromPage(Page<@NonNull UserResponseDTO> page) {
             return new UserPageDTO(
                     page.getContent(),
                     page.isFirst(),

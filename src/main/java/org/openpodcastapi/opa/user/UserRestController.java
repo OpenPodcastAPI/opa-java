@@ -1,5 +1,6 @@
 package org.openpodcastapi.opa.user;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class UserRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDTO.UserPageDTO> getAllUsers(Pageable pageable) {
+    public ResponseEntity<UserDTO.@NonNull UserPageDTO> getAllUsers(Pageable pageable) {
         final var paginatedUserResponse = service.getAllUsers(pageable);
 
         return new ResponseEntity<>(UserDTO.UserPageDTO.fromPage(paginatedUserResponse), HttpStatus.OK);
@@ -35,7 +36,7 @@ public class UserRestController {
     /// @return a [ResponseEntity] containing [UserDTO.UserResponseDTO] objects
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<UserDTO.UserResponseDTO> createUser(@RequestBody @Validated UserDTO.CreateUserDTO request) {
+    public ResponseEntity<UserDTO.@NonNull UserResponseDTO> createUser(@RequestBody @Validated UserDTO.CreateUserDTO request) {
         // Create and persist the user
         final var userResponseDTO = service.createAndPersistUser(request);
 
@@ -49,7 +50,7 @@ public class UserRestController {
     /// @return a [ResponseEntity] containing a summary of the action
     @DeleteMapping("/{uuid}")
     @PreAuthorize("hasRole('ADMIN') or #uuid == principal.uuid")
-    public ResponseEntity<String> deleteUser(@PathVariable String uuid) {
+    public ResponseEntity<@NonNull String> deleteUser(@PathVariable String uuid) {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
         final var uuidValue = UUID.fromString(uuid);

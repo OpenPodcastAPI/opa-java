@@ -46,14 +46,4 @@ public class AuthDTO {
             @JsonProperty(value = "expiresIn", required = true) @NotNull String expiresIn
     ) {
     }
-
-    /// Displays an auth error
-    ///
-    /// @param error   the error message
-    /// @param message an additional description of the error
-    public record ErrorMessageDTO(
-            @JsonProperty(value = "error", required = true) @NotNull String error,
-            @JsonProperty(value = "message", required = true) @NotNull String message
-    ) {
-    }
 }

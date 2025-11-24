@@ -2,6 +2,7 @@ package org.openpodcastapi.opa.subscription;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
+import lombok.NonNull;
 import org.hibernate.validator.constraints.URL;
 import org.hibernate.validator.constraints.UUID;
 import org.springframework.data.domain.Page;
@@ -78,7 +79,7 @@ public class SubscriptionDTO {
             int numberOfElements,
             int size
     ) {
-        public static SubscriptionPageDTO fromPage(Page<UserSubscriptionDTO> page) {
+        public static SubscriptionPageDTO fromPage(Page<@NonNull UserSubscriptionDTO> page) {
             return new SubscriptionPageDTO(
                     page.getContent(),
                     page.isFirst(),

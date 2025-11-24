@@ -1,6 +1,7 @@
 package org.openpodcastapi.opa.user;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -45,7 +46,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserDTO.UserResponseDTO> getAllUsers(Pageable pageable) {
+    public Page<UserDTO.@NonNull UserResponseDTO> getAllUsers(Pageable pageable) {
         final var paginatedUserDTO = repository.findAll(pageable);
 
         log.debug("returning {} users", paginatedUserDTO.getTotalElements());

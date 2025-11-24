@@ -1,5 +1,6 @@
 package org.openpodcastapi.opa.util;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.user.UserEntity;
@@ -31,7 +32,7 @@ public class AdminUserInitializer implements ApplicationRunner {
     ///
     /// @param args the application arguments
     @Override
-    public void run(ApplicationArguments args) {
+    public void run(@NonNull ApplicationArguments args) {
         if (userRepository.getUserByUsername(username).isEmpty()) {
             final var adminUserEntity = new UserEntity();
             adminUserEntity.setUsername(username);

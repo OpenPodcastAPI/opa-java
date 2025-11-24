@@ -1,12 +1,13 @@
 package org.openpodcastapi.opa.user;
 
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -98,7 +99,7 @@ class UserRestControllerTest {
         );
 
         // Mock the service call to return users
-        PageImpl<UserDTO.UserResponseDTO> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
+        PageImpl<UserDTO.@NonNull UserResponseDTO> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
         when(userService.getAllUsers(any())).thenReturn(page);
 
         // Perform the test for the admin role

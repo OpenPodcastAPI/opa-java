@@ -1,6 +1,7 @@
 package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.service.CustomUserDetails;
@@ -31,9 +32,9 @@ public class SubscriptionRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<SubscriptionDTO.SubscriptionPageDTO> getAllSubscriptionsForUser(@AuthenticationPrincipal CustomUserDetails user, Pageable pageable, @RequestParam(defaultValue = "false") boolean includeUnsubscribed) {
+    public ResponseEntity<SubscriptionDTO.@NonNull SubscriptionPageDTO> getAllSubscriptionsForUser(@AuthenticationPrincipal CustomUserDetails user, Pageable pageable, @RequestParam(defaultValue = "false") boolean includeUnsubscribed) {
         log.info("{}", user.getAuthorities());
-        Page<SubscriptionDTO.UserSubscriptionDTO> dto;
+        Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> dto;
 
         if (includeUnsubscribed) {
             dto = service.getAllSubscriptionsForUser(user.id(), pageable);
@@ -55,7 +56,7 @@ public class SubscriptionRestController {
     @GetMapping("/{uuid}")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<SubscriptionDTO.UserSubscriptionDTO> getSubscriptionByUuid(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) throws EntityNotFoundException {
+    public ResponseEntity<SubscriptionDTO.@NonNull UserSubscriptionDTO> getSubscriptionByUuid(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) throws EntityNotFoundException {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
         final var uuidValue = UUID.fromString(uuid);
@@ -76,7 +77,7 @@ public class SubscriptionRestController {
     @PostMapping("/{uuid}/unsubscribe")
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<SubscriptionDTO.UserSubscriptionDTO> unsubscribeUserFromFeed(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<SubscriptionDTO.@NonNull UserSubscriptionDTO> unsubscribeUserFromFeed(@PathVariable String uuid, @AuthenticationPrincipal CustomUserDetails user) {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.
         final var uuidValue = UUID.fromString(uuid);
@@ -92,7 +93,7 @@ public class SubscriptionRestController {
     /// @return a [ResponseEntity] containing a [SubscriptionDTO.BulkSubscriptionResponseDTO] object
     @PostMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<SubscriptionDTO.BulkSubscriptionResponseDTO> createUserSubscriptions(@RequestBody List<SubscriptionDTO.SubscriptionCreateDTO> request, @AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<SubscriptionDTO.@NonNull BulkSubscriptionResponseDTO> createUserSubscriptions(@RequestBody List<SubscriptionDTO.SubscriptionCreateDTO> request, @AuthenticationPrincipal CustomUserDetails user) {
         final var response = service.addSubscriptions(request, user.id());
 
         if (response.success().isEmpty() && !response.failure().isEmpty()) {
