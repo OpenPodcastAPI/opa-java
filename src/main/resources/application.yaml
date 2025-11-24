@@ -32,6 +32,9 @@ spring:
     type: redis
   session:
     timeout: 7d
+    redis:
+      namespace: "spring:session"
+      flush-mode: on_save
 
 server:
   port: 8080
