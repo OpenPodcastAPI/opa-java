@@ -53,7 +53,7 @@ operation::subscriptions-list-with-unsubscribed[snippets='curl-request,http-resp
 Returns the details of a single subscriptionEntity for the authenticated user.
 Returns `404` if the user has no subscriptionEntity entry for the feed in question.
 
-operation::subscriptionEntity-get[snippets='request-headers,path-parameters,curl-request,response-fields,http-response']
+operation::subscription-get[snippets='request-headers,path-parameters,curl-request,response-fields,http-response']
 
 [[actions-subscriptionEntity-update]]
 == Unsubscribe from a feed
@@ -62,4 +62,4 @@ Unsubscribes the authenticated user from a feed.
 This action updates the user subscriptionEntity record to mark the subscriptionEntity as inactive.
 It does not delete the subscriptionEntity record.
 
-operation::subscriptionEntity-unsubscribe[snippets='request-headers,path-parameters,curl-request,response-fields,http-response']
+operation::subscription-unsubscribe[snippets='request-headers,path-parameters,curl-request,response-fields,http-response']
