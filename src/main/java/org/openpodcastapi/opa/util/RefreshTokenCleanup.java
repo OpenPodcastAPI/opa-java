@@ -17,7 +17,7 @@ public class RefreshTokenCleanup {
     private final RefreshTokenRepository repository;
 
     /// Runs a task every hour to clean up expired refresh tokens
-    @Scheduled(cron = "0 * * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     @Transactional
     public void deleteExpiredTokens() {
         final int deleted = repository.deleteAllByExpiresAtBefore(Instant.now());
