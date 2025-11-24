@@ -26,8 +26,8 @@ spring:
     redis:
       host: "${REDIS_HOST}"
       port: "${REDIS_PORT}"
-      username: "${REDIS_USERNAME:redis}"
-      password: "${REDIS_PASSWORD:changeme}"
+      username: "${REDIS_USERNAME:default}"
+      password: "${REDIS_PASSWORD}"
   session:
     timeout: 7d
     data:
