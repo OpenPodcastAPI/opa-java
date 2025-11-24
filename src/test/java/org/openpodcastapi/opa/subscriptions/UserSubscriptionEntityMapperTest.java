@@ -47,7 +47,6 @@ class UserSubscriptionEntityMapperTest {
                 .uuid(uuid)
                 .user(userEntity)
                 .subscription(subscriptionEntity)
-                .isSubscribed(true)
                 .createdAt(timestamp)
                 .updatedAt(timestamp)
                 .build();
@@ -60,6 +59,6 @@ class UserSubscriptionEntityMapperTest {
 
         // The DTO should use the SubscriptionEntity's UUID rather than the UserSubscriptionEntity's
         assertEquals(subscriptionEntity.getUuid(), dto.uuid());
-        assertTrue(dto.isSubscribed());
+        assertNull(dto.unsubscribedAt());
     }
 }
