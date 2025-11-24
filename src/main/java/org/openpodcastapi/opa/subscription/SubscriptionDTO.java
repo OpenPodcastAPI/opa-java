@@ -1,6 +1,7 @@
 package org.openpodcastapi.opa.subscription;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.NonNull;
 import org.hibernate.validator.constraints.URL;
@@ -23,17 +24,17 @@ public class SubscriptionDTO {
 
     /// A DTO representing a user's subscription to a given feed
     ///
-    /// @param uuid         the feed UUID
-    /// @param feedUrl      the feed URL
-    /// @param createdAt    the date at which the subscription link was created
-    /// @param updatedAt    the date at which the subscription link was last updated
-    /// @param isSubscribed whether the user is currently subscribed to the feed
+    /// @param uuid           the feed UUID
+    /// @param feedUrl        the feed URL
+    /// @param createdAt      the date at which the subscription link was created
+    /// @param updatedAt      the date at which the subscription link was last updated
+    /// @param unsubscribedAt the date at which the user unsubscribed from the feed
     public record UserSubscriptionDTO(
             @JsonProperty(required = true) @UUID java.util.UUID uuid,
             @JsonProperty(required = true) @URL String feedUrl,
             @JsonProperty(required = true) Instant createdAt,
             @JsonProperty(required = true) Instant updatedAt,
-            @JsonProperty(required = true) Boolean isSubscribed
+            @JsonProperty @Nullable Instant unsubscribedAt
     ) {
     }
 

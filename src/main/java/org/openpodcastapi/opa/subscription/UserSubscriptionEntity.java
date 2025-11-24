@@ -31,14 +31,14 @@ public class UserSubscriptionEntity {
     @JoinColumn(name = "subscription_id")
     private SubscriptionEntity subscription;
 
-    @Column(columnDefinition = "boolean default true")
-    private Boolean isSubscribed;
-
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    @Column
+    private Instant unsubscribedAt;
 
     @PrePersist
     public void prePersist() {

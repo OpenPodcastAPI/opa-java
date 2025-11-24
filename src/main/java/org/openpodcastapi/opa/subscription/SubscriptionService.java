@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -73,7 +74,7 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {
         log.debug("Fetching all active subscriptions for {}", userId);
-        return userSubscriptionRepository.findAllByUserIdAndIsSubscribedTrue(userId, pageable).map(userSubscriptionMapper::toDto);
+        return userSubscriptionRepository.findAllByUserIdAndUnsubscribedAtNotEmpty(userId, pageable).map(userSubscriptionMapper::toDto);
     }
 
     /// Persists a new user subscription to the database
@@ -91,13 +92,13 @@ public class SubscriptionService {
         final var newSubscription = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, subscriptionEntity.getUuid()).orElseGet(() -> {
             log.debug("Creating new subscription for user {} and subscription {}", userId, subscriptionEntity.getUuid());
             final var createdSubscriptionEntity = new UserSubscriptionEntity();
-            createdSubscriptionEntity.setIsSubscribed(true);
+            createdSubscriptionEntity.setUnsubscribedAt(null);
             createdSubscriptionEntity.setUser(userEntity);
             createdSubscriptionEntity.setSubscription(subscriptionEntity);
             return userSubscriptionRepository.save(createdSubscriptionEntity);
         });
 
-        newSubscription.setIsSubscribed(true);
+        newSubscription.setUnsubscribedAt(null);
         return userSubscriptionMapper.toDto(userSubscriptionRepository.save(newSubscription));
     }
 
@@ -143,7 +144,7 @@ public class SubscriptionService {
         final var userSubscriptionEntity = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, feedUUID)
                 .orElseThrow(() -> new EntityNotFoundException("no subscription found"));
 
-        userSubscriptionEntity.setIsSubscribed(false);
+        userSubscriptionEntity.setUnsubscribedAt(Instant.now());
         return userSubscriptionMapper.toDto(userSubscriptionRepository.save(userSubscriptionEntity));
     }
 }
