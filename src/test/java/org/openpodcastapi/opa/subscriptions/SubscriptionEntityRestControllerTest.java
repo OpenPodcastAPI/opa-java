@@ -1,6 +1,5 @@
 package org.openpodcastapi.opa.subscriptions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +23,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.List;
@@ -53,7 +53,7 @@ class SubscriptionEntityRestControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private JsonMapper jsonMapper;
 
     @Autowired
     private TokenService tokenService;
@@ -247,7 +247,7 @@ class SubscriptionEntityRestControllerTest {
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(List.of(dto1, dto2))))
+                        .content(jsonMapper.writeValueAsString(List.of(dto1, dto2))))
                 .andExpect(status().isMultiStatus())
                 .andDo(document("subscriptions-bulk-create-mixed",
                         preprocessRequest(prettyPrint()),
@@ -293,7 +293,7 @@ class SubscriptionEntityRestControllerTest {
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(List.of(dto))))
+                        .content(jsonMapper.writeValueAsString(List.of(dto))))
                 .andExpect(status().is2xxSuccessful())
                 .andDo(document("subscriptions-bulk-create-success",
                         preprocessRequest(prettyPrint()),
@@ -333,7 +333,7 @@ class SubscriptionEntityRestControllerTest {
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(List.of(dto))))
+                        .content(jsonMapper.writeValueAsString(List.of(dto))))
                 .andExpect(status().isBadRequest())
                 .andDo(document("subscriptions-bulk-create-failure",
                         preprocessRequest(prettyPrint()),
