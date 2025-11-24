@@ -2,12 +2,13 @@ package org.openpodcastapi.opa.controllers.api;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.auth.AuthDTO;
 import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,16 +19,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
 @Log4j2
 public class AuthController {
     private final TokenService tokenService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
 
+    public AuthController(
+            TokenService tokenService,
+            UserRepository userRepository,
+            @Qualifier("apiLoginManager") AuthenticationManager authenticationManager
+    ) {
+        this.tokenService = tokenService;
+        this.userRepository = userRepository;
+        this.authenticationManager = authenticationManager;
+    }
+
     // === Login endpoint ===
     @PostMapping("/api/auth/login")
-    public ResponseEntity<AuthDTO.LoginSuccessResponse> login(@RequestBody @NotNull AuthDTO.LoginRequest loginRequest) {
+    public ResponseEntity<AuthDTO.@NonNull LoginSuccessResponse> login(@RequestBody @NotNull AuthDTO.LoginRequest loginRequest) {
         // Set the authentication using the provided details
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
@@ -51,7 +61,7 @@ public class AuthController {
 
     // === Refresh token endpoint ===
     @PostMapping("/api/auth/refresh")
-    public ResponseEntity<AuthDTO.RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
+    public ResponseEntity<AuthDTO.@NonNull RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
         final var targetUserEntity = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
 
         // Validate the existing refresh token

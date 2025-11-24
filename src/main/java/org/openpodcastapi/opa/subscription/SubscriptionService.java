@@ -1,6 +1,7 @@
 package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.user.UserRepository;
@@ -58,7 +59,7 @@ public class SubscriptionService {
     /// @param userId the database ID of the authenticated userEntity
     /// @return a paginated set of [SubscriptionDTO.UserSubscriptionDTO] objects
     @Transactional(readOnly = true)
-    public Page<SubscriptionDTO.UserSubscriptionDTO> getAllSubscriptionsForUser(Long userId, Pageable pageable) {
+    public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllSubscriptionsForUser(Long userId, Pageable pageable) {
         log.debug("Fetching subscriptions for {}", userId);
         return userSubscriptionRepository
                 .findAllByUserId(userId, pageable)
@@ -70,7 +71,7 @@ public class SubscriptionService {
     /// @param userId the database ID of the authenticated user
     /// @return a paginated set of [SubscriptionDTO.UserSubscriptionDTO] objects
     @Transactional(readOnly = true)
-    public Page<SubscriptionDTO.UserSubscriptionDTO> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {
+    public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {
         log.debug("Fetching all active subscriptions for {}", userId);
         return userSubscriptionRepository.findAllByUserIdAndIsSubscribedTrue(userId, pageable).map(userSubscriptionMapper::toDto);
     }

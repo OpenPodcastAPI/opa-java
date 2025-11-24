@@ -1,5 +1,6 @@
 package org.openpodcastapi.opa.service;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
@@ -19,7 +20,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     /// @param username the username to map
     /// @throws UsernameNotFoundException if user is not matched by username
     @Override
-    public UserDetails loadUserByUsername(String username) {
+    public @NonNull UserDetails loadUserByUsername(@NonNull String username) {
         return userRepository.getUserByUsername(username)
                 .map(this::mapToUserDetails)
                 .orElseThrow(() -> new UsernameNotFoundException("UserEntity not found"));

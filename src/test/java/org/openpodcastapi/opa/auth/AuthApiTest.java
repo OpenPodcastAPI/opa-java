@@ -5,12 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.RefreshTokenRepository;
 import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.user.UserEntity;
-import org.openpodcastapi.opa.user.UserRoles;
 import org.openpodcastapi.opa.user.UserRepository;
+import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,6 +50,7 @@ class AuthApiTest {
     private UserRepository userRepository;
 
     @MockitoBean
+    @Qualifier("apiLoginManager")
     private AuthenticationManager authenticationManager;
 
     @MockitoBean

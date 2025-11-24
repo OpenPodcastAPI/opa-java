@@ -8,22 +8,14 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create-drop
-  h2:
-    console:
-      enabled: true
   flyway:
     enabled: false
   data:
     redis:
-      host: "${REDIS_HOST:127.0.0.1}"
-      port: "${REDIS_PORT:6379}"
+      host: "${REDIS_HOST:localhost}"
+      port: "${REDIS_PORT:0}"
       username: "${REDIS_USERNAME:redis}"
       password: "${REDIS_PASSWORD:changeme}"
-  cache:
-    type: redis
-  session:
-    timeout: 7d
-
 
 jwt:
   secret: "a-very-long-value-used-only-to-run-tests"
