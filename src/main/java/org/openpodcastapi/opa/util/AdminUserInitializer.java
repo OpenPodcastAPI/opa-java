@@ -33,7 +33,7 @@ public class AdminUserInitializer implements ApplicationRunner {
     /// @param args the application arguments
     @Override
     public void run(@NonNull ApplicationArguments args) {
-        if (userRepository.getUserByUsername(username).isEmpty()) {
+        if (userRepository.findUserByUsername(username).isEmpty()) {
             final var adminUserEntity = new UserEntity();
             adminUserEntity.setUsername(username);
             adminUserEntity.setEmail(email);

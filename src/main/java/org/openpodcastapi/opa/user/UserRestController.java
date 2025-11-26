@@ -11,13 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/// Controller for user-related API requests
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserRestController {
     private final UserService service;
 
-    /// Returns all users
+    /// Returns all users. Only accessible to admins.
     ///
     /// @param pageable the [Pageable] options used for pagination
     /// @return a [ResponseEntity] containing [UserDTO.UserPageDTO] objects

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/// Service class for user-related actions
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -45,6 +46,11 @@ public class UserService {
         return mapper.toDto(persistedUserEntity);
     }
 
+    /// Fetches a list of all users in the system.
+    /// Intended for use by admins only.
+    ///
+    /// @param pageable the [Pageable] object containing pagination options
+    /// @return a [Page] iterable of [UserDTO.UserResponseDTO] objects
     @Transactional(readOnly = true)
     public Page<UserDTO.@NonNull UserResponseDTO> getAllUsers(Pageable pageable) {
         final var paginatedUserDTO = repository.findAll(pageable);
@@ -61,7 +67,7 @@ public class UserService {
     /// @throws EntityNotFoundException if no matching record is found
     @Transactional
     public String deleteUserAndReturnMessage(UUID uuid) throws EntityNotFoundException {
-        final var userEntity = repository.getUserByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+        final var userEntity = repository.findUserByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
 
         repository.delete(userEntity);
 

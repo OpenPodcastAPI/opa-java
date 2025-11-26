@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+/// Service for refresh token and JWT-related actions
 @Service
 @RequiredArgsConstructor
 public class TokenService {
@@ -42,6 +43,8 @@ public class TokenService {
     }
 
     /// Returns the expiration time for JWTs
+    ///
+    /// @return a number representing the user-defined TTL of JWT tokens
     public long getExpirationTime() {
         return Long.parseLong(jwtExpiration);
     }

@@ -81,7 +81,7 @@ class SubscriptionEntityRestControllerTest {
                 .updatedAt(Instant.now())
                 .build();
 
-        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+        when(userRepository.findUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
 
         accessToken = tokenService.generateAccessToken(mockUser);
     }

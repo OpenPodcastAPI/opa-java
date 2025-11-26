@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+/// Controller for the web authentication endpoints
 @Controller
 @Log4j2
 @RequiredArgsConstructor
@@ -22,7 +23,12 @@ public class WebAuthController {
     private static final String REGISTER_TEMPLATE = "auth/register";
     private final UserService userService;
 
-    // === Login page ===
+    /// Controller for the login page.
+    /// Displays an error message if a previous login was unsuccessful.
+    ///
+    /// @param error an optional error message
+    /// @param model a placeholder for additional data to be passed to Thymeleaf
+    /// @return the login page
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             Model model) {
@@ -32,20 +38,31 @@ public class WebAuthController {
         return "auth/login";
     }
 
-    // === Logout confirmation page ===
+    /// Controller for the logout confirmation page.
+    /// Logouts are handled by Spring Security, this page displays a confirmation only.
+    ///
+    /// @return the logout confirmation page
     @GetMapping("/logout-confirm")
     public String logoutPage() {
         return "auth/logout";
     }
 
-    // === Registration page ===
+    /// Controller for the account registration page.
+    ///
+    /// @param model a placeholder for additional data to be passed to Thymeleaf
+    /// @return the account registration page template
     @GetMapping("/register")
     public String getRegister(Model model) {
         model.addAttribute(USER_REQUEST_ATTRIBUTE, new UserDTO.CreateUserDTO("", "", ""));
         return REGISTER_TEMPLATE;
     }
 
-    // === Registration POST handler ===
+    /// Controller for the account registration form.
+    ///
+    /// @param createUserRequest the [UserDTO.CreateUserDTO] containing the new account details
+    /// @param result the [BindingResult] for displaying data validation errors
+    /// @param model a placeholder for additional data to be passed to Thymeleaf
+    /// @return a redirect to the login page, if successful
     @PostMapping("/register")
     public String processRegistration(
             @Valid @ModelAttribute UserDTO.CreateUserDTO createUserRequest,
@@ -60,7 +77,7 @@ public class WebAuthController {
         try {
             userService.createAndPersistUser(createUserRequest);
         } catch (DataIntegrityViolationException _) {
-            result.rejectValue("username", "", "Username or email already exists");
+            result.rejectValue("username", "", "Username or email already in use");
             model.addAttribute(USER_REQUEST_ATTRIBUTE, createUserRequest);
             return REGISTER_TEMPLATE;
         }

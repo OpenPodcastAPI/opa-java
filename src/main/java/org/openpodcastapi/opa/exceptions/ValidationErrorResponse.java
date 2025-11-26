@@ -13,6 +13,10 @@ public record ValidationErrorResponse(
         int status,
         List<FieldError> errors
 ) {
+    /// Represents an error message for field validation errors
+    ///
+    /// @param field   the field containing the error
+    /// @param message the error message to display
     public record FieldError(String field, String message) {
     }
 }

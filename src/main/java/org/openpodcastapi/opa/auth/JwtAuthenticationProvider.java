@@ -18,12 +18,18 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+/// Handles provisioning and authenticating JWTs for API requests
 @Component
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     private final UserRepository repository;
     private final SecretKey key;
 
+    /// Constructor with secret value provided in `.env` file
+    /// or environment variables.
+    ///
+    /// @param repository the [UserRepository] interface for user entities
+    /// @param secret     the secret value used to generate JWT values
     public JwtAuthenticationProvider(
             UserRepository repository,
             @Value("${jwt.secret}") String secret) {
@@ -36,25 +42,31 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication)
             throws AuthenticationException {
 
+        // Get the JWT token from the authentication header
         final var token = (String) authentication.getCredentials();
 
         try {
+            // Parse the JWT claims
             final var claims = Jwts.parser()
                     .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
 
+            // Get the user's UUID from the claims subject
             final var uuid = UUID.fromString(claims.getSubject());
 
-            final var user = repository.getUserByUuid(uuid)
+            // Find the user entity
+            final var user = repository.findUserByUuid(uuid)
                     .orElseThrow(() -> new BadCredentialsException("User not found"));
 
+            // Configure the user details for the authenticated user
             final var details = new CustomUserDetails(
                     user.getId(), user.getUuid(), user.getUsername(),
                     user.getPassword(), user.getUserRoles()
             );
 
+            // Return the parsed token
             return new UsernamePasswordAuthenticationToken(
                     details, token, details.getAuthorities());
         } catch (Exception ex) {

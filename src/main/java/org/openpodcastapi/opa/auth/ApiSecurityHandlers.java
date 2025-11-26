@@ -6,9 +6,12 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
+/// Contains handlers for token-related errors on API endpoints
 @Component
 public class ApiSecurityHandlers {
     /// Returns an unauthorized response for unauthenticate API queries
+    ///
+    /// @return an unauthorized response with a JSON-formatted error message
     @Bean
     public AuthenticationEntryPoint apiAuthenticationEntryPoint() {
         return (_, response, authException) -> {
@@ -21,6 +24,8 @@ public class ApiSecurityHandlers {
     }
 
     /// Returns a forbidden response for API queries
+    ///
+    /// @return a forbidden response with a JSON-formatted error message
     @Bean
     public AccessDeniedHandler apiAccessDeniedHandler() {
         return (_, response, exception) -> {

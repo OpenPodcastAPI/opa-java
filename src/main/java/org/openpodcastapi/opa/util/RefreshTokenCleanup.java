@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+/// A scheduled task to clean up expired refresh tokens
 @Component
 @RequiredArgsConstructor
 @Log4j2

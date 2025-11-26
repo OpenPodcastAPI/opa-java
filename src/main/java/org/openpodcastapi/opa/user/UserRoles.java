@@ -1,8 +1,9 @@
 package org.openpodcastapi.opa.user;
 
-/// The roles associated with users. All users have `USER` permissions.
-/// Admins require the `ADMIN` role to perform administrative functions.
+/// An enum of roles for user accounts
 public enum UserRoles {
+    /// Base permission for all registered users
     USER,
+    /// Identifies a user as an administrator and enables them to perform additional functions
     ADMIN,
 }

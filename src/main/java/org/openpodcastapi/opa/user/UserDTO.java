@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+/// Container for all user-related data transfer objects
 public class UserDTO {
     /// A DTO representing a user response over the api
     ///
@@ -47,6 +48,10 @@ public class UserDTO {
             int numberOfElements,
             int size
     ) {
+        /// Returns a paginated response with details from a [Page] of users
+        ///
+        /// @param page the [Page] of [UserResponseDTO] items
+        /// @return a [UserPageDTO] with pagination details filled out
         public static UserPageDTO fromPage(Page<@NonNull UserResponseDTO> page) {
             return new UserPageDTO(
                     page.getContent(),
