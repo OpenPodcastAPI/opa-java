@@ -74,7 +74,7 @@ class AuthApiTest {
                 .build();
 
         // Mock repository behavior for finding user by username
-        when(userRepository.findByUsername("test_user")).thenReturn(Optional.of(mockUserEntity));
+        when(userRepository.findUserByUsername("test_user")).thenReturn(Optional.of(mockUserEntity));
 
         // Mock the refresh token validation to return the mock user
         when(tokenService.validateRefreshToken(anyString(), any(UserEntity.class)))

@@ -12,6 +12,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /// Implements a custom user details service to expose UUID information
+///
+/// @param id       the user ID
+/// @param uuid     the user UUID
+/// @param username the user's username
+/// @param password the user's hashed password
+/// @param roles    the user's assigned roles
 public record CustomUserDetails(Long id, UUID uuid, String username, String password,
                                 Set<UserRoles> roles) implements UserDetails {
 

@@ -22,6 +22,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/// Security configuration for the Spring application
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -41,6 +42,14 @@ public class SecurityConfig {
             "/favicon.ico",
     };
 
+    /// API-related security configuration
+    ///
+    /// @param http                      the [HttpSecurity] object to be configured
+    /// @param jwtAuthenticationProvider the [JwtAuthenticationProvider] used to handle JWT auth
+    /// @param entryPoint                the entrypoint that commences the JWT auth
+    /// @param deniedHandler             the [AccessDeniedHandler] that handles auth failures
+    /// @param converter                 the [ApiBearerTokenAuthenticationConverter] that manages JWT validation
+    /// @return the configured [HttpSecurity] object
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurity(
@@ -79,6 +88,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /// Web-related security configuration
+    ///
+    /// @param http the [HttpSecurity] object to be configured
+    /// @return the configured [HttpSecurity] object
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurity(HttpSecurity http) {
@@ -104,11 +117,19 @@ public class SecurityConfig {
                 .build();
     }
 
+    /// The default password encoder used for hashing and encoding user passwords and JWTs
+    ///
+    /// @return a configured [BCryptPasswordEncoder]
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /// An authentication provider for password-based authentication
+    ///
+    /// @param userDetailsService the [UserDetailsService] for loading user data
+    /// @param passwordEncoder    the default password encoder
+    /// @return the configured [DaoAuthenticationProvider]
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
                                                                BCryptPasswordEncoder passwordEncoder) {
@@ -117,11 +138,20 @@ public class SecurityConfig {
         return provider;
     }
 
+    /// An authentication provider for JWT-based authentication
+    ///
+    /// @param provider a configured [JwtAuthenticationProvider]
+    /// @return a configured [ProviderManager] that uses the JWT auth provider
+    /// @see JwtAuthenticationProvider for provider details
     @Bean(name = "jwtAuthManager")
     public AuthenticationManager jwtAuthenticationManager(JwtAuthenticationProvider provider) {
         return new ProviderManager(provider);
     }
 
+    /// An authentication provider for API POST login
+    ///
+    /// @param daoProvider a configured [DaoAuthenticationProvider]
+    /// @return a configured [ProviderManager] that uses basic username/password auth
     @Bean(name = "apiLoginManager", defaultCandidate = false)
     public AuthenticationManager apiLoginAuthenticationManager(
             DaoAuthenticationProvider daoProvider) {

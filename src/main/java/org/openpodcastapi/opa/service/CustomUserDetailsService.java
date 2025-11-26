@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     /// @throws UsernameNotFoundException if user is not matched by username
     @Override
     public @NonNull UserDetails loadUserByUsername(@NonNull String username) {
-        return userRepository.getUserByUsername(username)
+        return userRepository.findUserByUsername(username)
                 .map(this::mapToUserDetails)
                 .orElseThrow(() -> new UsernameNotFoundException("UserEntity not found"));
     }

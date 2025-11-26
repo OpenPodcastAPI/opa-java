@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/// Service for subscription-related actions
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -57,7 +58,8 @@ public class SubscriptionService {
 
     /// Gets all subscriptions for the authenticated userEntity
     ///
-    /// @param userId the database ID of the authenticated userEntity
+    /// @param userId   the database ID of the authenticated userEntity
+    /// @param pageable the [Pageable] object containing pagination options
     /// @return a paginated set of [SubscriptionDTO.UserSubscriptionDTO] objects
     @Transactional(readOnly = true)
     public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllSubscriptionsForUser(Long userId, Pageable pageable) {
@@ -69,7 +71,8 @@ public class SubscriptionService {
 
     /// Gets all active subscriptions for the authenticated user
     ///
-    /// @param userId the database ID of the authenticated user
+    /// @param userId   the database ID of the authenticated user
+    /// @param pageable the [Pageable] object containing pagination options
     /// @return a paginated set of [SubscriptionDTO.UserSubscriptionDTO] objects
     @Transactional(readOnly = true)
     public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {

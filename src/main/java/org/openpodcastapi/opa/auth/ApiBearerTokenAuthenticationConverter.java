@@ -6,6 +6,10 @@ import org.springframework.security.oauth2.server.resource.web.authentication.Be
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.stereotype.Component;
 
+/// A converter that handles JWT-based auth for API requests.
+///
+/// This converter targets only the API endpoints at `/api`.
+/// Auth for the frontend is handled by Spring's form login.
 @Component
 public class ApiBearerTokenAuthenticationConverter implements AuthenticationConverter {
 
@@ -15,7 +19,7 @@ public class ApiBearerTokenAuthenticationConverter implements AuthenticationConv
     @Override
     public Authentication convert(HttpServletRequest request) {
 
-        String path = request.getRequestURI();
+        final var path = request.getRequestURI();
 
         // Don't authenticate the auth endpoints
         if (path.startsWith("/api/auth/")) {

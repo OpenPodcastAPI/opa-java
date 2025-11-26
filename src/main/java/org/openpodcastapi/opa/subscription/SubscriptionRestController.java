@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/// Controller for API subscription requests
 @RestController
 @RequiredArgsConstructor
 @Log4j2
@@ -50,6 +51,7 @@ public class SubscriptionRestController {
     /// Returns a single subscription entry by UUID
     ///
     /// @param uuid the UUID value to query for
+    /// @param user the [CustomUserDetails] for the user
     /// @return a [ResponseEntity] containing a [SubscriptionDTO.UserSubscriptionDTO] object
     /// @throws EntityNotFoundException  if no entry is found
     /// @throws IllegalArgumentException if the UUID is improperly formatted
@@ -71,6 +73,7 @@ public class SubscriptionRestController {
     /// Updates the subscription status of a subscription for a given user
     ///
     /// @param uuid the UUID of the subscription to update
+    /// @param user the [CustomUserDetails] for the user
     /// @return a [ResponseEntity] containing a [SubscriptionDTO.UserSubscriptionDTO] object
     /// @throws EntityNotFoundException  if no entry is found
     /// @throws IllegalArgumentException if the UUID is improperly formatted
@@ -90,6 +93,7 @@ public class SubscriptionRestController {
     /// Bulk creates [UserSubscriptionEntity] objects for a user. Creates new [SubscriptionEntity] objects if not already present
     ///
     /// @param request a list of [SubscriptionDTO.SubscriptionCreateDTO] objects
+    /// @param user    the [CustomUserDetails] for the user
     /// @return a [ResponseEntity] containing a [SubscriptionDTO.BulkSubscriptionResponseDTO] object
     @PostMapping
     @PreAuthorize("hasRole('USER')")

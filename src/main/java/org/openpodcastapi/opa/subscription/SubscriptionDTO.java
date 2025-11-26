@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import java.time.Instant;
 import java.util.List;
 
+/// Container for all subscription-related data transfer objects
 public class SubscriptionDTO {
     /// A DTO representing a new subscription
     ///
@@ -80,6 +81,10 @@ public class SubscriptionDTO {
             int numberOfElements,
             int size
     ) {
+        /// Returns a paginated response with details from a [Page] of user subscriptions
+        ///
+        /// @param page the [Page] of [UserSubscriptionDTO] items
+        /// @return a [SubscriptionPageDTO] with pagination details filled out
         public static SubscriptionPageDTO fromPage(Page<@NonNull UserSubscriptionDTO> page) {
             return new SubscriptionPageDTO(
                     page.getContent(),

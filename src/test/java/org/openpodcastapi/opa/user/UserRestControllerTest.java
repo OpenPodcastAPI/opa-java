@@ -76,7 +76,7 @@ class UserRestControllerTest {
                 .updatedAt(Instant.now())
                 .build();
 
-        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+        when(userRepository.findUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
 
         String accessToken = tokenService.generateAccessToken(mockUser);
 
@@ -150,7 +150,7 @@ class UserRestControllerTest {
                 .updatedAt(Instant.now())
                 .build();
 
-        when(userRepository.getUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+        when(userRepository.findUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
 
         String accessToken = tokenService.generateAccessToken(mockUser);
 

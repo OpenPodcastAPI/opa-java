@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+/// Controllers for API-based authentication
 @RestController
 @Log4j2
 public class AuthController {
@@ -25,6 +26,12 @@ public class AuthController {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
 
+    /// Constructs the controller with the correct [AuthenticationManager]
+    ///
+    /// @param tokenService          the [TokenService] used to manage auth tokens
+    /// @param userRepository        the [UserRepository] used to manage user entity interaction
+    /// @param authenticationManager the [AuthenticationManager] used to handle auth
+    /// @see org.openpodcastapi.opa.config.SecurityConfig#apiLoginAuthenticationManager
     public AuthController(
             TokenService tokenService,
             UserRepository userRepository,
@@ -35,7 +42,10 @@ public class AuthController {
         this.authenticationManager = authenticationManager;
     }
 
-    // === Login endpoint ===
+    /// The API login endpoint. Accepts a basic username/password combination to authenticate.
+    ///
+    /// @param loginRequest the [AuthDTO.LoginRequest] containing the user's credentials
+    /// @return a [ResponseEntity] containing a [AuthDTO.LoginSuccessResponse]
     @PostMapping("/api/auth/login")
     public ResponseEntity<AuthDTO.@NonNull LoginSuccessResponse> login(@RequestBody @NotNull AuthDTO.LoginRequest loginRequest) {
         // Set the authentication using the provided details
@@ -47,7 +57,7 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Fetch the user record from the database
-        final var userEntity = userRepository.findByUsername(loginRequest.username()).orElseThrow(() -> new EntityNotFoundException("No userEntity with username " + loginRequest.username() + " found"));
+        final var userEntity = userRepository.findUserByUsername(loginRequest.username()).orElseThrow(() -> new EntityNotFoundException("No userEntity with username " + loginRequest.username() + " found"));
 
         // Generate the access and refresh tokens for the user
         final String accessToken = tokenService.generateAccessToken(userEntity);
@@ -59,10 +69,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // === Refresh token endpoint ===
+    /// The token refresh endpoint. Validates refresh tokens and returns new access tokens.
+    ///
+    /// @param refreshTokenRequest the [AuthDTO.RefreshTokenRequest] request body
+    /// @return a [ResponseEntity] containing a [AuthDTO.RefreshTokenResponse]
     @PostMapping("/api/auth/refresh")
     public ResponseEntity<AuthDTO.@NonNull RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
-        final var targetUserEntity = userRepository.findByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
+        final var targetUserEntity = userRepository.findUserByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
 
         // Validate the existing refresh token
         final UserEntity userEntity = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUserEntity);
