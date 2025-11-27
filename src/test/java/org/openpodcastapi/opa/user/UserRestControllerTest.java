@@ -1,30 +1,21 @@
 package org.openpodcastapi.opa.user;
 
-import lombok.NonNull;
-import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -40,20 +31,33 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets")
-@Log4j2
 class UserRestControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private TokenService tokenService;
 
-    @MockitoBean
+    @Autowired
     private UserRepository userRepository;
 
-    @MockitoBean
-    private UserService userService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    private UserEntity mockUser;
+
+    @BeforeEach
+    void setup() {
+        userRepository.deleteAll();
+        final var mockUserDetails = new UserDTO.CreateUserDTO("user", "testPassword", "test@test.test");
+        final var convertedUser = userMapper.toEntity(mockUserDetails);
+        convertedUser.setUuid(UUID.randomUUID());
+        convertedUser.setPassword(passwordEncoder.encode("testPassword"));
+        mockUser = userRepository.save(convertedUser);
+    }
 
     @Test
     void getAllUsers_shouldReturn401_forAnonymousUser() throws Exception {
@@ -63,44 +67,19 @@ class UserRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "admin", roles = {"USER", "ADMIN"})
     void getAllUsers_shouldReturn200_andList() throws Exception {
-        UserEntity mockUser = UserEntity
-                .builder()
-                .id(1L)
-                .uuid(UUID.randomUUID())
-                .username("admin")
-                .email("admin@test.test")
-                .userRoles(Set.of(UserRoles.USER, UserRoles.ADMIN))
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
+        mockUser.setUserRoles(Set.of(UserRoles.USER, UserRoles.ADMIN));
+        mockUser = userRepository.save(mockUser);
 
-        when(userRepository.findUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        String accessToken = tokenService.generateAccessToken(mockUser);
-
-        final Instant createdDate = Instant.now();
-
-        final UserDTO.UserResponseDTO user1 = new UserDTO.UserResponseDTO(
-                UUID.randomUUID(),
-                "alice",
-                "alice@test.com",
-                createdDate,
-                createdDate
-        );
-
-        final UserDTO.UserResponseDTO user2 = new UserDTO.UserResponseDTO(
-                UUID.randomUUID(),
-                "bob",
-                "bob@test.com",
-                createdDate,
-                createdDate
-        );
-
-        // Mock the service call to return users
-        PageImpl<UserDTO.@NonNull UserResponseDTO> page = new PageImpl<>(List.of(user1, user2), PageRequest.of(0, 2), 2);
-        when(userService.getAllUsers(any())).thenReturn(page);
+        // Mock a second user
+        final var uuid = UUID.randomUUID();
+        final var dto = new UserDTO.CreateUserDTO("bob", "testPassword", "bob@test.test");
+        final var convertedUser = userMapper.toEntity(dto);
+        convertedUser.setUuid(uuid);
+        convertedUser.setPassword(passwordEncoder.encode("testPassword"));
+        userRepository.save(convertedUser);
 
         // Perform the test for the admin role
         mockMvc.perform(get("/api/v1/users")
@@ -137,21 +116,7 @@ class UserRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user", roles = "USER")
     void getAllUsers_shouldReturn403_forUserRole() throws Exception {
-        UserEntity mockUser = UserEntity
-                .builder()
-                .id(1L)
-                .uuid(UUID.randomUUID())
-                .username("user")
-                .email("user@test.test")
-                .userRoles(Set.of(UserRoles.USER))
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
-
-        when(userRepository.findUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
-
         String accessToken = tokenService.generateAccessToken(mockUser);
 
         mockMvc.perform(get("/api/v1/users")
@@ -160,7 +125,7 @@ class UserRestControllerTest {
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isForbidden())
-                .andDo(document("users-list",
+                .andDo(document("users-list-unsuccessful",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         queryParameters(

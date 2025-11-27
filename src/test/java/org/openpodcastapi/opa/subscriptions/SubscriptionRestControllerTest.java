@@ -1,38 +1,29 @@
 package org.openpodcastapi.opa.subscriptions;
 
-import jakarta.persistence.EntityNotFoundException;
-import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openpodcastapi.opa.security.TokenService;
 import org.openpodcastapi.opa.subscription.SubscriptionDTO;
+import org.openpodcastapi.opa.subscription.SubscriptionRepository;
 import org.openpodcastapi.opa.subscription.SubscriptionService;
+import org.openpodcastapi.opa.user.UserDTO;
 import org.openpodcastapi.opa.user.UserEntity;
+import org.openpodcastapi.opa.user.UserMapper;
 import org.openpodcastapi.opa.user.UserRepository;
-import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.restdocs.test.autoconfigure.AutoConfigureRestDocs;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -48,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs(outputDir = "target/generated-snippets")
-class SubscriptionEntityRestControllerTest {
+class SubscriptionRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -58,32 +49,32 @@ class SubscriptionEntityRestControllerTest {
     @Autowired
     private TokenService tokenService;
 
-    @MockitoBean
+    @Autowired
     private UserRepository userRepository;
 
-    @MockitoBean
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
     private SubscriptionService subscriptionService;
 
-    private String accessToken;
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     private UserEntity mockUser;
 
     @BeforeEach
     void setup() {
-        mockUser = UserEntity
-                .builder()
-                .id(1L)
-                .uuid(UUID.randomUUID())
-                .username("user")
-                .email("user@test.test")
-                .userRoles(Set.of(UserRoles.USER))
-                .createdAt(Instant.now())
-                .updatedAt(Instant.now())
-                .build();
-
-        when(userRepository.findUserByUuid(any(UUID.class))).thenReturn(Optional.of(mockUser));
-
-        accessToken = tokenService.generateAccessToken(mockUser);
+        userRepository.deleteAll();
+        subscriptionRepository.deleteAll();
+        final var mockUserDetails = new UserDTO.CreateUserDTO("user", "testPassword", "test@test.test");
+        final var convertedUser = userMapper.toEntity(mockUserDetails);
+        convertedUser.setUuid(UUID.randomUUID());
+        convertedUser.setPassword(passwordEncoder.encode("testPassword"));
+        mockUser = userRepository.save(convertedUser);
     }
 
     @Test
@@ -95,14 +86,16 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
-        SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), null);
-        SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), null);
-        Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        when(subscriptionService.getAllActiveSubscriptionsForUser(eq(mockUser.getId()), any(Pageable.class)))
-                .thenReturn(page);
+        final var uuid1 = UUID.randomUUID();
+        final var uuid2 = UUID.randomUUID();
+
+        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
+        final var sub2DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid2.toString(), "test.com/feed2");
+
+        subscriptionService.addSubscriptions(List.of(sub1DTO, sub2DTO), mockUser.getId());
 
         mockMvc.perform(get("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -141,14 +134,18 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void getAllSubscriptionsForUser_shouldIncludeUnsubscribedWhenRequested() throws Exception {
-        SubscriptionDTO.UserSubscriptionDTO sub1 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed1", Instant.now(), Instant.now(), null);
-        SubscriptionDTO.UserSubscriptionDTO sub2 = new SubscriptionDTO.UserSubscriptionDTO(UUID.randomUUID(), "test.com/feed2", Instant.now(), Instant.now(), Instant.now());
-        Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> page = new PageImpl<>(List.of(sub1, sub2));
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        when(subscriptionService.getAllSubscriptionsForUser(eq(mockUser.getId()), any(Pageable.class)))
-                .thenReturn(page);
+        final var uuid1 = UUID.randomUUID();
+        final var uuid2 = UUID.randomUUID();
+
+        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
+        final var sub2DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid2.toString(), "test.com/feed2");
+
+        subscriptionService.addSubscriptions(List.of(sub1DTO, sub2DTO), mockUser.getId());
+
+        subscriptionService.unsubscribeUserFromFeed(uuid2, mockUser.getId());
 
         mockMvc.perform(get("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -168,10 +165,8 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "test")
     void getNonexistentSubscription_shouldReturnNotFound() throws Exception {
-        when(subscriptionService.getUserSubscriptionBySubscriptionUuid(any(UUID.class), anyLong()))
-                .thenThrow(new EntityNotFoundException());
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
         mockMvc.perform(get("/api/v1/subscriptions/{uuid}", UUID.randomUUID())
                         .header("Authorization", "Bearer " + accessToken))
@@ -179,15 +174,16 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void getSubscriptionByUuid_shouldReturnSubscription() throws Exception {
-        UUID subscriptionUuid = UUID.randomUUID();
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        SubscriptionDTO.UserSubscriptionDTO sub = new SubscriptionDTO.UserSubscriptionDTO(subscriptionUuid, "test.com/feed1", Instant.now(), Instant.now(), null);
-        when(subscriptionService.getUserSubscriptionBySubscriptionUuid(subscriptionUuid, mockUser.getId()))
-                .thenReturn(sub);
+        final var uuid1 = UUID.randomUUID();
 
-        mockMvc.perform(get("/api/v1/subscriptions/{uuid}", subscriptionUuid)
+        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
+
+        subscriptionService.addSubscriptions(List.of(sub1DTO), mockUser.getId());
+
+        mockMvc.perform(get("/api/v1/subscriptions/{uuid}", uuid1)
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andDo(document("subscription-get",
@@ -217,8 +213,9 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void createUserSubscriptionsWithoutBody_shouldReturnBadRequest() throws Exception {
+        final var accessToken = tokenService.generateAccessToken(mockUser);
+
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -226,28 +223,19 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void createUserSubscriptions_shouldReturnMixedResponse() throws Exception {
-        final Instant timestamp = Instant.now();
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        final UUID goodFeedUUID = UUID.randomUUID();
-        final String BAD_UUID = "62ad30ce-aac0-4f0a-a811";
+        final var uuid1 = UUID.randomUUID();
+        final var BAD_UUID = "62ad30ce-aac0-4f0a-a811";
 
-        SubscriptionDTO.SubscriptionCreateDTO dto1 = new SubscriptionDTO.SubscriptionCreateDTO(goodFeedUUID.toString(), "test.com/feed1");
-        SubscriptionDTO.SubscriptionCreateDTO dto2 = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed2");
-
-        SubscriptionDTO.BulkSubscriptionResponseDTO response = new SubscriptionDTO.BulkSubscriptionResponseDTO(
-                List.of(new SubscriptionDTO.UserSubscriptionDTO(goodFeedUUID, "test.com/feed1", timestamp, timestamp, null)),
-                List.of(new SubscriptionDTO.SubscriptionFailureDTO(BAD_UUID, "test.com/feed2", "invalid UUID format"))
-        );
-
-        when(subscriptionService.addSubscriptions(anyList(), eq(mockUser.getId())))
-                .thenReturn(response);
+        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
+        final var sub2DTO = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed1");
 
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonMapper.writeValueAsString(List.of(dto1, dto2))))
+                        .content(jsonMapper.writeValueAsString(List.of(sub1DTO, sub2DTO))))
                 .andExpect(status().isMultiStatus())
                 .andDo(document("subscriptions-bulk-create-mixed",
                         preprocessRequest(prettyPrint()),
@@ -275,20 +263,10 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void createUserSubscription_shouldReturnSuccess() throws Exception {
-        final UUID goodFeedUUID = UUID.randomUUID();
-        final Instant timestamp = Instant.now();
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        SubscriptionDTO.SubscriptionCreateDTO dto = new SubscriptionDTO.SubscriptionCreateDTO(goodFeedUUID.toString(), "test.com/feed1");
-
-        final var response = new SubscriptionDTO.BulkSubscriptionResponseDTO(
-                List.of(new SubscriptionDTO.UserSubscriptionDTO(goodFeedUUID, "test.com/feed1", timestamp, timestamp, null)),
-                List.of()
-        );
-
-        when(subscriptionService.addSubscriptions(anyList(), eq(mockUser.getId())))
-                .thenReturn(response);
+        final var dto = new SubscriptionDTO.SubscriptionCreateDTO(UUID.randomUUID().toString(), "test.com/feed1");
 
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -316,19 +294,10 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void createUserSubscription_shouldReturnFailure() throws Exception {
-        final String BAD_UUID = "62ad30ce-aac0-4f0a-a811";
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        final var dto = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed2");
-
-        final var response = new SubscriptionDTO.BulkSubscriptionResponseDTO(
-                List.of(),
-                List.of(new SubscriptionDTO.SubscriptionFailureDTO(BAD_UUID, "test.com/feed2", "invalid UUID format"))
-        );
-
-        when(subscriptionService.addSubscriptions(anyList(), eq(mockUser.getId())))
-                .thenReturn(response);
+        final var dto = new SubscriptionDTO.SubscriptionCreateDTO("62ad30ce-aac0-4f0a-a811", "test.com/feed2");
 
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -358,10 +327,8 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void unsubscribingNonexistentEntity_shouldReturnNotFound() throws Exception {
-        when(subscriptionService.unsubscribeUserFromFeed(any(UUID.class), anyLong()))
-                .thenThrow(new EntityNotFoundException());
+        final var accessToken = tokenService.generateAccessToken(mockUser);
 
         mockMvc.perform(post("/api/v1/subscriptions/{uuid}/unsubscribe", UUID.randomUUID())
                         .header("Authorization", "Bearer " + accessToken)
@@ -370,21 +337,13 @@ class SubscriptionEntityRestControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
     void unsubscribe_shouldReturnUpdatedSubscription() throws Exception {
+        final var accessToken = tokenService.generateAccessToken(mockUser);
+
         final var subscriptionUuid = UUID.randomUUID();
-        final var timestamp = Instant.now();
+        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(subscriptionUuid.toString(), "test.com/feed1");
 
-        SubscriptionDTO.UserSubscriptionDTO updatedSubscription = new SubscriptionDTO.UserSubscriptionDTO(
-                subscriptionUuid,
-                "test.com/feed1",
-                timestamp,
-                timestamp,
-                timestamp
-        );
-
-        when(subscriptionService.unsubscribeUserFromFeed(subscriptionUuid, mockUser.getId()))
-                .thenReturn(updatedSubscription);
+        subscriptionService.addSubscriptions(List.of(sub1DTO), mockUser.getId());
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/subscriptions/{uuid}/unsubscribe", subscriptionUuid)
@@ -393,7 +352,7 @@ class SubscriptionEntityRestControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.uuid").value(subscriptionUuid.toString()))
                 .andExpect(jsonPath("$.feedUrl").value("test.com/feed1"))
-                .andExpect(jsonPath("$.unsubscribedAt").value(timestamp.toString()))
+                .andExpect(jsonPath("$.unsubscribedAt").exists())
                 .andDo(document("subscription-unsubscribe",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),

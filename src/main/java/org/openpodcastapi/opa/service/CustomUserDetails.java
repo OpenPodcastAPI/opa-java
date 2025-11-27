@@ -1,6 +1,6 @@
 package org.openpodcastapi.opa.service;
 
-import lombok.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.user.UserRoles;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -2,7 +2,7 @@ package org.openpodcastapi.opa.auth;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import lombok.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.service.CustomUserDetails;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +28,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
     /// Constructor with secret value provided in `.env` file
     /// or environment variables.
     ///
-    /// @param repository the [UserRepository] interface for user entities
+    /// @param repository the repository interface for user entities
     /// @param secret     the secret value used to generate JWT values
     public JwtAuthenticationProvider(
             UserRepository repository,

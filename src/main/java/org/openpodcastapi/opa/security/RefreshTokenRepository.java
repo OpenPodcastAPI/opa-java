@@ -1,6 +1,6 @@
 package org.openpodcastapi.opa.security;
 
-import lombok.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

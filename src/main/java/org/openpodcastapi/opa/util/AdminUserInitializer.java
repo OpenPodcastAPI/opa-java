@@ -1,11 +1,10 @@
 package org.openpodcastapi.opa.util;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.openpodcastapi.opa.user.UserRoles;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -14,11 +13,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Set;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /// Creates a default admin user for the system
 @Component
-@RequiredArgsConstructor
-@Log4j2
 public class AdminUserInitializer implements ApplicationRunner {
+    private static final Logger log = getLogger(AdminUserInitializer.class);
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder encoder;
     @Value("${admin.username}")
@@ -27,6 +27,15 @@ public class AdminUserInitializer implements ApplicationRunner {
     private String password;
     @Value("${admin.email}")
     private String email;
+
+    /// Required-args constructor
+    ///
+    /// @param userRepository the user repository used for user interactions
+    /// @param encoder        the password encoder used to encrypt the admin password
+    public AdminUserInitializer(UserRepository userRepository, BCryptPasswordEncoder encoder) {
+        this.userRepository = userRepository;
+        this.encoder = encoder;
+    }
 
     /// Creates a default admin user for the system
     ///

@@ -3,7 +3,7 @@ package org.openpodcastapi.opa.user;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
@@ -30,7 +30,7 @@ public class UserDTO {
 
     /// A paginated DTO representing a list of subscriptions
     ///
-    /// @param users            the [UserResponseDTO] list representing the users
+    /// @param users            the DTO list representing the users
     /// @param first            whether this is the first page
     /// @param last             whether this is the last page
     /// @param page             the current page number
@@ -48,10 +48,10 @@ public class UserDTO {
             int numberOfElements,
             int size
     ) {
-        /// Returns a paginated response with details from a [Page] of users
+        /// Returns a paginated response with details from a paginated list of users
         ///
-        /// @param page the [Page] of [UserResponseDTO] items
-        /// @return a [UserPageDTO] with pagination details filled out
+        /// @param page a paginated list of user DTOs
+        /// @return a DTO with pagination details filled out
         public static UserPageDTO fromPage(Page<@NonNull UserResponseDTO> page) {
             return new UserPageDTO(
                     page.getContent(),

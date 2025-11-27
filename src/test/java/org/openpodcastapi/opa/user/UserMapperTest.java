@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserMapperImpl.class)
-class UserEntityMapperTest {
+class UserMapperTest {
     @Autowired
     private UserMapper mapper;
 
@@ -26,13 +26,7 @@ class UserEntityMapperTest {
     void testToDto() {
         final Instant timestamp = Instant.now();
         final UUID uuid = UUID.randomUUID();
-        UserEntity userEntity = UserEntity.builder()
-                .uuid(uuid)
-                .username("test")
-                .email("test@test.test")
-                .createdAt(timestamp)
-                .updatedAt(timestamp)
-                .build();
+        final var userEntity = new UserEntity(1L, uuid, "test", "", "test@test.test", timestamp, timestamp);
 
         UserDTO.UserResponseDTO dto = mapper.toDto(userEntity);
         assertNotNull(dto);

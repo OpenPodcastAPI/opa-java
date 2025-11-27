@@ -1,7 +1,6 @@
 package org.openpodcastapi.opa.service;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,11 +8,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /// Custom service for mapping user details
 @Service
-@RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
+
+    /// Required-args constructor
+    ///
+    /// @param userRepository the user repository for user interactions
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /// Returns a mapped custom user details model by username
     ///
@@ -28,14 +36,17 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     /// Maps a user to a custom user details model
     ///
-    /// @param userEntity the [UserEntity] model to map
+    /// @param userEntity the user model to map
     private CustomUserDetails mapToUserDetails(UserEntity userEntity) {
         return new CustomUserDetails(
                 userEntity.getId(),
                 userEntity.getUuid(),
                 userEntity.getUsername(),
                 userEntity.getPassword(),
-                userEntity.getUserRoles()
+                userEntity.getUserRoles() == null
+                        ? Set.of()
+                        : userEntity.getUserRoles().stream()
+                        .collect(Collectors.toUnmodifiableSet())
         );
     }
 

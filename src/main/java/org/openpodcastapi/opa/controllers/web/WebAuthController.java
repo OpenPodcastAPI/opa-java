@@ -1,8 +1,6 @@
 package org.openpodcastapi.opa.controllers.web;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import org.openpodcastapi.opa.user.UserDTO;
 import org.openpodcastapi.opa.user.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,12 +14,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 /// Controller for the web authentication endpoints
 @Controller
-@Log4j2
-@RequiredArgsConstructor
 public class WebAuthController {
     private static final String USER_REQUEST_ATTRIBUTE = "createUserRequest";
     private static final String REGISTER_TEMPLATE = "auth/register";
     private final UserService userService;
+
+    /// Constructor for the web auth controller
+    ///
+    /// @param userService the [UserService] class to handle user interactions
+    public WebAuthController(UserService userService) {
+        this.userService = userService;
+    }
 
     /// Controller for the login page.
     /// Displays an error message if a previous login was unsuccessful.
@@ -60,8 +63,8 @@ public class WebAuthController {
     /// Controller for the account registration form.
     ///
     /// @param createUserRequest the [UserDTO.CreateUserDTO] containing the new account details
-    /// @param result the [BindingResult] for displaying data validation errors
-    /// @param model a placeholder for additional data to be passed to Thymeleaf
+    /// @param result            the [BindingResult] for displaying data validation errors
+    /// @param model             a placeholder for additional data to be passed to Thymeleaf
     /// @return a redirect to the login page, if successful
     @PostMapping("/register")
     public String processRegistration(

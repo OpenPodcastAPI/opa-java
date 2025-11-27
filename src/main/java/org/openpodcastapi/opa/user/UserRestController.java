@@ -1,7 +1,6 @@
 package org.openpodcastapi.opa.user;
 
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +12,22 @@ import java.util.UUID;
 
 /// Controller for user-related API requests
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
 public class UserRestController {
     private final UserService service;
 
+    /// Required-args constructor
+    ///
+    /// @param userService the user service used to handle user interactions
+    public UserRestController(UserService userService) {
+        this.service = userService;
+    }
+
     /// Returns all users. Only accessible to admins.
     ///
-    /// @param pageable the [Pageable] options used for pagination
-    /// @return a [ResponseEntity] containing [UserDTO.UserPageDTO] objects
+    /// @param pageable the pagination options
+    /// @return a response containing user objects
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDTO.@NonNull UserPageDTO> getAllUsers(Pageable pageable) {
         final var paginatedUserResponse = service.getAllUsers(pageable);
@@ -33,10 +37,9 @@ public class UserRestController {
 
     /// Creates a new user in the system
     ///
-    /// @param request a [UserDTO.CreateUserDTO] request body
-    /// @return a [ResponseEntity] containing [UserDTO.UserResponseDTO] objects
+    /// @param request a user creation request body
+    /// @return a response containing user objects
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<UserDTO.@NonNull UserResponseDTO> createUser(@RequestBody @Validated UserDTO.CreateUserDTO request) {
         // Create and persist the user
         final var userResponseDTO = service.createAndPersistUser(request);
@@ -47,8 +50,8 @@ public class UserRestController {
 
     /// Fetch a specific user by UUID
     ///
-    /// @param uuid the [UUID] of the user
-    /// @return a [ResponseEntity] containing a summary of the action
+    /// @param uuid the UUID of the user
+    /// @return a response containing a summary of the action
     @DeleteMapping("/{uuid}")
     @PreAuthorize("hasRole('ADMIN') or #uuid == principal.uuid")
     public ResponseEntity<@NonNull String> deleteUser(@PathVariable String uuid) {

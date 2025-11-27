@@ -1,11 +1,12 @@
 package org.openpodcastapi.opa.subscription;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
 import org.hibernate.validator.constraints.URL;
 import org.hibernate.validator.constraints.UUID;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 
 import java.time.Instant;
@@ -30,6 +31,7 @@ public class SubscriptionDTO {
     /// @param createdAt      the date at which the subscription link was created
     /// @param updatedAt      the date at which the subscription link was last updated
     /// @param unsubscribedAt the date at which the user unsubscribed from the feed
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record UserSubscriptionDTO(
             @JsonProperty(required = true) @UUID java.util.UUID uuid,
             @JsonProperty(required = true) @URL String feedUrl,
@@ -63,7 +65,7 @@ public class SubscriptionDTO {
 
     /// A paginated DTO representing a list of subscriptions
     ///
-    /// @param subscriptions    the [UserSubscriptionDTO] list representing the subscriptions
+    /// @param subscriptions    the DTO list representing the subscriptions
     /// @param first            whether this is the first page
     /// @param last             whether this is the last page
     /// @param page             the current page number
@@ -81,10 +83,10 @@ public class SubscriptionDTO {
             int numberOfElements,
             int size
     ) {
-        /// Returns a paginated response with details from a [Page] of user subscriptions
+        /// Returns a paginated response with details from a page of user subscriptions
         ///
-        /// @param page the [Page] of [UserSubscriptionDTO] items
-        /// @return a [SubscriptionPageDTO] with pagination details filled out
+        /// @param page the paginated list of DTO items
+        /// @return a subscription DTO with pagination details filled out
         public static SubscriptionPageDTO fromPage(Page<@NonNull UserSubscriptionDTO> page) {
             return new SubscriptionPageDTO(
                     page.getContent(),

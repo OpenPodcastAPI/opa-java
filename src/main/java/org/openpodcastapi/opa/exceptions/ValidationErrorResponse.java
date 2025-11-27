@@ -7,7 +7,7 @@ import java.util.List;
 ///
 /// @param timestamp the timestamp at which the error occurred
 /// @param status    the HTTP status code
-/// @param errors    a list of [FieldError] objects
+/// @param errors    a list of field errors
 public record ValidationErrorResponse(
         Instant timestamp,
         int status,

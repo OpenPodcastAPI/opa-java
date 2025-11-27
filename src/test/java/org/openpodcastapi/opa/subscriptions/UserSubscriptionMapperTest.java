@@ -9,14 +9,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserSubscriptionMapperImpl.class)
-class UserSubscriptionEntityMapperTest {
+class UserSubscriptionMapperTest {
     @Autowired
     private UserSubscriptionMapper mapper;
 
@@ -26,30 +25,12 @@ class UserSubscriptionEntityMapperTest {
     /// Tests that a [UserSubscriptionEntity] entity maps to a [SubscriptionDTO.UserSubscriptionDTO] representation
     @Test
     void testToDto() {
-        final Instant timestamp = Instant.now();
-        final UUID uuid = UUID.randomUUID();
-        UserEntity userEntity = UserEntity.builder()
-                .uuid(UUID.randomUUID())
-                .username("test")
-                .email("test@test.test")
-                .createdAt(timestamp)
-                .updatedAt(timestamp)
-                .build();
+        final var uuid = UUID.randomUUID();
+        final var userEntity = new UserEntity(1L, UUID.randomUUID(), "test", "test@test.test");
 
-        SubscriptionEntity subscriptionEntity = SubscriptionEntity.builder()
-                .uuid(UUID.randomUUID())
-                .feedUrl("test.com/feed1")
-                .createdAt(timestamp)
-                .updatedAt(timestamp)
-                .build();
+        final var subscriptionEntity = new SubscriptionEntity(UUID.randomUUID(), "test.com/feed1");
 
-        UserSubscriptionEntity userSubscriptionEntity = UserSubscriptionEntity.builder()
-                .uuid(uuid)
-                .user(userEntity)
-                .subscription(subscriptionEntity)
-                .createdAt(timestamp)
-                .updatedAt(timestamp)
-                .build();
+        final var userSubscriptionEntity = new UserSubscriptionEntity(uuid, userEntity, subscriptionEntity);
 
         SubscriptionDTO.UserSubscriptionDTO dto = mapper.toDto(userSubscriptionEntity);
         assertNotNull(dto);
