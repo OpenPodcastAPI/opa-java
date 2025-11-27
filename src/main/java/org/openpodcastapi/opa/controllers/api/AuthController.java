@@ -2,17 +2,14 @@ package org.openpodcastapi.opa.controllers.api;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotNull;
-import lombok.NonNull;
-import lombok.extern.log4j.Log4j2;
+import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.auth.AuthDTO;
 import org.openpodcastapi.opa.security.TokenService;
-import org.openpodcastapi.opa.user.UserEntity;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /// Controllers for API-based authentication
 @RestController
-@Log4j2
 public class AuthController {
     private final TokenService tokenService;
     private final UserRepository userRepository;
@@ -44,12 +40,12 @@ public class AuthController {
 
     /// The API login endpoint. Accepts a basic username/password combination to authenticate.
     ///
-    /// @param loginRequest the [AuthDTO.LoginRequest] containing the user's credentials
-    /// @return a [ResponseEntity] containing a [AuthDTO.LoginSuccessResponse]
+    /// @param loginRequest the login request containing the user's credentials
+    /// @return a success response
     @PostMapping("/api/auth/login")
     public ResponseEntity<AuthDTO.@NonNull LoginSuccessResponse> login(@RequestBody @NotNull AuthDTO.LoginRequest loginRequest) {
         // Set the authentication using the provided details
-        Authentication authentication = authenticationManager.authenticate(
+        final var authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.username(), loginRequest.password())
         );
 
@@ -71,17 +67,17 @@ public class AuthController {
 
     /// The token refresh endpoint. Validates refresh tokens and returns new access tokens.
     ///
-    /// @param refreshTokenRequest the [AuthDTO.RefreshTokenRequest] request body
-    /// @return a [ResponseEntity] containing a [AuthDTO.RefreshTokenResponse]
+    /// @param refreshTokenRequest the refresh token request body
+    /// @return a token refresh response
     @PostMapping("/api/auth/refresh")
     public ResponseEntity<AuthDTO.@NonNull RefreshTokenResponse> getRefreshToken(@RequestBody @NotNull AuthDTO.RefreshTokenRequest refreshTokenRequest) {
         final var targetUserEntity = userRepository.findUserByUsername(refreshTokenRequest.username()).orElseThrow(() -> new EntityNotFoundException("No user with username " + refreshTokenRequest.username() + " found"));
 
         // Validate the existing refresh token
-        final UserEntity userEntity = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUserEntity);
+        final var userEntity = tokenService.validateRefreshToken(refreshTokenRequest.refreshToken(), targetUserEntity);
 
         // Generate new access token
-        final String newAccessToken = tokenService.generateAccessToken(userEntity);
+        final var newAccessToken = tokenService.generateAccessToken(userEntity);
 
         // Format the token and expiration time into a DTO
         final var response = new AuthDTO.RefreshTokenResponse(newAccessToken, String.valueOf(tokenService.getExpirationTime()));

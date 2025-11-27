@@ -1,6 +1,5 @@
 package org.openpodcastapi.opa.config;
 
-import lombok.RequiredArgsConstructor;
 import org.openpodcastapi.opa.auth.ApiBearerTokenAuthenticationConverter;
 import org.openpodcastapi.opa.auth.JwtAuthenticationProvider;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 /// Security configuration for the Spring application
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 @EnableMethodSecurity
 public class SecurityConfig {
 
@@ -44,12 +42,12 @@ public class SecurityConfig {
 
     /// API-related security configuration
     ///
-    /// @param http                      the [HttpSecurity] object to be configured
-    /// @param jwtAuthenticationProvider the [JwtAuthenticationProvider] used to handle JWT auth
+    /// @param http                      the security object to be configured
+    /// @param jwtAuthenticationProvider the JWT provider used to handle JWT auth
     /// @param entryPoint                the entrypoint that commences the JWT auth
-    /// @param deniedHandler             the [AccessDeniedHandler] that handles auth failures
-    /// @param converter                 the [ApiBearerTokenAuthenticationConverter] that manages JWT validation
-    /// @return the configured [HttpSecurity] object
+    /// @param deniedHandler             the handler that handles auth failures
+    /// @param converter                 the bearer token converter that manages JWT validation
+    /// @return the configured security object
     @Bean
     @Order(1)
     public SecurityFilterChain apiSecurity(
@@ -60,9 +58,9 @@ public class SecurityConfig {
             ApiBearerTokenAuthenticationConverter converter
     ) {
 
-        AuthenticationManager jwtManager = new ProviderManager(jwtAuthenticationProvider);
+        final var jwtManager = new ProviderManager(jwtAuthenticationProvider);
 
-        BearerTokenAuthenticationFilter bearerFilter =
+        final var bearerFilter =
                 new BearerTokenAuthenticationFilter(jwtManager, converter);
 
         bearerFilter.setAuthenticationFailureHandler(
@@ -90,8 +88,8 @@ public class SecurityConfig {
 
     /// Web-related security configuration
     ///
-    /// @param http the [HttpSecurity] object to be configured
-    /// @return the configured [HttpSecurity] object
+    /// @param http the security object to be configured
+    /// @return the configured security object
     @Bean
     @Order(2)
     public SecurityFilterChain webSecurity(HttpSecurity http) {
@@ -119,7 +117,7 @@ public class SecurityConfig {
 
     /// The default password encoder used for hashing and encoding user passwords and JWTs
     ///
-    /// @return a configured [BCryptPasswordEncoder]
+    /// @return a configured password encoder
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -127,21 +125,21 @@ public class SecurityConfig {
 
     /// An authentication provider for password-based authentication
     ///
-    /// @param userDetailsService the [UserDetailsService] for loading user data
+    /// @param userDetailsService the service for loading user data
     /// @param passwordEncoder    the default password encoder
-    /// @return the configured [DaoAuthenticationProvider]
+    /// @return the configured authentication provider
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
                                                                BCryptPasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        final var provider = new DaoAuthenticationProvider(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 
     /// An authentication provider for JWT-based authentication
     ///
-    /// @param provider a configured [JwtAuthenticationProvider]
-    /// @return a configured [ProviderManager] that uses the JWT auth provider
+    /// @param provider a configured provider
+    /// @return a configured manager that uses the JWT auth provider
     /// @see JwtAuthenticationProvider for provider details
     @Bean(name = "jwtAuthManager")
     public AuthenticationManager jwtAuthenticationManager(JwtAuthenticationProvider provider) {
@@ -150,8 +148,8 @@ public class SecurityConfig {
 
     /// An authentication provider for API POST login
     ///
-    /// @param daoProvider a configured [DaoAuthenticationProvider]
-    /// @return a configured [ProviderManager] that uses basic username/password auth
+    /// @param daoProvider a configured auth provider
+    /// @return a configured manager that uses basic username/password auth
     @Bean(name = "apiLoginManager", defaultCandidate = false)
     public AuthenticationManager apiLoginAuthenticationManager(
             DaoAuthenticationProvider daoProvider) {

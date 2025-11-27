@@ -31,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
     ///
     /// See [Thymeleaf Layout Dialect](https://ultraq.github.io/thymeleaf-layout-dialect/) for more information
     ///
-    /// @return the configured [LayoutDialect]
+    /// @return the configured layout dialect
     @Bean
     public LayoutDialect layoutDialect() {
         return new LayoutDialect();
