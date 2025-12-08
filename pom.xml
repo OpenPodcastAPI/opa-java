@@ -37,7 +37,7 @@
         <java.version>25</java.version>
         <org.mapstruct.version>1.6.3</org.mapstruct.version>
         <org.mapstruct.extensions.spring.version>2.0.0</org.mapstruct.extensions.spring.version>
-        <com.fasterxml.uuid.version>5.1.1</com.fasterxml.uuid.version>
+        <com.fasterxml.uuid.version>5.2.0</com.fasterxml.uuid.version>
     </properties>
     <dependencies>
         <dependency>
