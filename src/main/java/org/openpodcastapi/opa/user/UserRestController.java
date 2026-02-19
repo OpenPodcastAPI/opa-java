@@ -53,7 +53,7 @@ public class UserRestController {
     /// @param uuid the UUID of the user
     /// @return a response containing a summary of the action
     @DeleteMapping("/{uuid}")
-    @PreAuthorize("hasRole('ADMIN') or #uuid == principal.uuid")
+    @PreAuthorize("hasRole('ADMIN') or #uuid == authentication.principal.uuid" )
     public ResponseEntity<@NonNull String> deleteUser(@PathVariable String uuid) {
         // Attempt to validate the UUID value from the provided string
         // If the value is invalid, the GlobalExceptionHandler will throw a 400.

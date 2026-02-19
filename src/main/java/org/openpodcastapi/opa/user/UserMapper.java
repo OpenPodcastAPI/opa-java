@@ -2,9 +2,10 @@ package org.openpodcastapi.opa.user;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 /// Mapper for user items
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
     /// Maps a user entity to a DTO.
     ///
@@ -18,9 +19,6 @@ public interface UserMapper {
     ///
     /// @param dto the user creation DTO to map
     /// @return the mapped entity
-    @Mapping(target = "uuid", ignore = true)
-    @Mapping(target = "subscriptions", ignore = true)
     @Mapping(target = "password", ignore = true)
-    @Mapping(target = "userRoles", ignore = true)
     UserEntity toEntity(UserDTO.CreateUserDTO dto);
 }
