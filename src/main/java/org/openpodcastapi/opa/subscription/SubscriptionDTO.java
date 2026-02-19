@@ -3,7 +3,6 @@ package org.openpodcastapi.opa.subscription;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.URL;
 import org.hibernate.validator.constraints.UUID;
 import org.jspecify.annotations.NonNull;
@@ -14,16 +13,6 @@ import java.util.List;
 
 /// Container for all subscription-related data transfer objects
 public class SubscriptionDTO {
-    /// A DTO representing a new subscription
-    ///
-    /// @param feedUrl the URL of the feed
-    /// @param uuid    the UUID of the feed calculated by the client
-    public record SubscriptionCreateDTO(
-            @JsonProperty(required = true) @NotNull @UUID String uuid,
-            @JsonProperty(required = true) @NotNull String feedUrl
-    ) {
-    }
-
     /// A DTO representing a user's subscription to a given feed
     ///
     /// @param uuid           the feed UUID

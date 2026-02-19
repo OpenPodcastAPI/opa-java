@@ -2,6 +2,9 @@ package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.jspecify.annotations.NonNull;
+import org.openpodcastapi.opa.feed.FeedDTO;
+import org.openpodcastapi.opa.feed.FeedEntity;
+import org.openpodcastapi.opa.feed.FeedService;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Page;
@@ -20,39 +23,22 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Service
 public class SubscriptionService {
     private static final Logger log = getLogger(SubscriptionService.class);
+    private final FeedService feedService;
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionMapper subscriptionMapper;
-    private final UserSubscriptionRepository userSubscriptionRepository;
-    private final UserSubscriptionMapper userSubscriptionMapper;
     private final UserRepository userRepository;
 
     /// All-args constructor
     ///
-    /// @param subscriptionRepository     the repository used for subscription interactions
-    /// @param subscriptionMapper         the mapper used for mapping subscription entities and DTOs
-    /// @param userSubscriptionRepository the repository used for user subscription interactions
-    /// @param userSubscriptionMapper     the mapper used for mapping user subscription entities and DTOs
+    /// @param feedService                the repository used for feed interactions
+    /// @param subscriptionRepository the repository used for user subscription interactions
+    /// @param subscriptionMapper     the mapper used for mapping user subscription entities and DTOs
     /// @param userRepository             the repository used for user interactions
-    public SubscriptionService(SubscriptionRepository subscriptionRepository, SubscriptionMapper subscriptionMapper, UserSubscriptionRepository userSubscriptionRepository, UserSubscriptionMapper userSubscriptionMapper, UserRepository userRepository) {
+    public SubscriptionService(FeedService feedService, SubscriptionRepository subscriptionRepository, SubscriptionMapper subscriptionMapper, UserRepository userRepository) {
+        this.feedService = feedService;
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionMapper = subscriptionMapper;
-        this.userSubscriptionRepository = userSubscriptionRepository;
-        this.userSubscriptionMapper = userSubscriptionMapper;
         this.userRepository = userRepository;
-    }
-
-    /// Fetches an existing repository from the database or creates a new one if none is found
-    ///
-    /// @param dto the DTO containing the subscription data
-    /// @return the fetched or created subscription
-    protected SubscriptionEntity fetchOrCreateSubscription(SubscriptionDTO.SubscriptionCreateDTO dto) {
-        final var feedUuid = UUID.fromString(dto.uuid());
-        return subscriptionRepository
-                .findByUuid(feedUuid)
-                .orElseGet(() -> {
-                    log.info("Creating new subscription with UUID {} and feed URL {}", dto.uuid(), dto.feedUrl());
-                    return subscriptionRepository.save(subscriptionMapper.toEntity(dto));
-                });
     }
 
     /// Fetches a single subscription for an authenticated userEntity, if it exists
@@ -64,11 +50,11 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public SubscriptionDTO.UserSubscriptionDTO getUserSubscriptionBySubscriptionUuid(UUID subscriptionUuid, Long userId) throws EntityNotFoundException {
         log.debug("Fetching subscription {} for userEntity {}", subscriptionUuid, userId);
-        final var userSubscription = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, subscriptionUuid)
+        final var userSubscription = subscriptionRepository.findByUserIdAndFeedUuid(userId, subscriptionUuid)
                 .orElseThrow(() -> new EntityNotFoundException("subscription not found for userEntity"));
 
         log.debug("Subscription {} for userEntity {} found", subscriptionUuid, userId);
-        return userSubscriptionMapper.toDto(userSubscription);
+        return subscriptionMapper.toDto(userSubscription);
     }
 
     /// Gets all subscriptions for the authenticated userEntity
@@ -79,9 +65,9 @@ public class SubscriptionService {
     @Transactional(readOnly = true)
     public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllSubscriptionsForUser(Long userId, Pageable pageable) {
         log.debug("Fetching subscriptions for {}", userId);
-        return userSubscriptionRepository
+        return subscriptionRepository
                 .findAllByUserId(userId, pageable)
-                .map(userSubscriptionMapper::toDto);
+                .map(subscriptionMapper::toDto);
     }
 
     /// Gets all active subscriptions for the authenticated user
@@ -93,34 +79,34 @@ public class SubscriptionService {
     public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {
         log.debug("Fetching all active subscriptions for {}", userId);
         log.info("{}", userId);
-        var thing = userSubscriptionRepository.findAll();
+        var thing = subscriptionRepository.findAll();
         thing.forEach(entity -> log.info("{}, {}", entity.getUser().getId(), entity.getUnsubscribedAt()));
-        return userSubscriptionRepository.findAllByUserIdAndUnsubscribedAtIsNull(userId, pageable).map(userSubscriptionMapper::toDto);
+        return subscriptionRepository.findAllByUserIdAndUnsubscribedAtIsNull(userId, pageable).map(subscriptionMapper::toDto);
     }
 
     /// Persists a new user subscription to the database
     /// If an existing entry is found for the user and subscription, the `isSubscribed` property is set to `true`
     ///
-    /// @param subscriptionEntity the target subscription
-    /// @param userId             the ID of the target user
+    /// @param feed   the target feed
+    /// @param userId the ID of the target user
     /// @return a response containing a user subscription DTO
     /// @throws EntityNotFoundException if no matching user is found
-    protected SubscriptionDTO.UserSubscriptionDTO persistUserSubscription(SubscriptionEntity subscriptionEntity, Long userId) {
+    protected SubscriptionDTO.UserSubscriptionDTO persistUserSubscription(FeedEntity feed, Long userId) {
         final var userEntity = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("user not found"));
 
         log.debug("{}", userEntity);
 
-        final var newSubscription = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, subscriptionEntity.getUuid()).orElseGet(() -> {
-            log.debug("Creating new subscription for user {} and subscription {}", userId, subscriptionEntity.getUuid());
-            final var createdSubscriptionEntity = new UserSubscriptionEntity();
+        final var newSubscription = subscriptionRepository.findByUserIdAndFeedUuid(userId, feed.getUuid()).orElseGet(() -> {
+            log.debug("Creating new subscription for user {} and subscription {}", userId, feed.getUuid());
+            final var createdSubscriptionEntity = new SubscriptionEntity();
             createdSubscriptionEntity.setUnsubscribedAt(null);
             createdSubscriptionEntity.setUser(userEntity);
-            createdSubscriptionEntity.setSubscription(subscriptionEntity);
-            return userSubscriptionRepository.save(createdSubscriptionEntity);
+            createdSubscriptionEntity.setFeed(feed);
+            return subscriptionRepository.save(createdSubscriptionEntity);
         });
 
         newSubscription.setUnsubscribedAt(null);
-        return userSubscriptionMapper.toDto(userSubscriptionRepository.save(newSubscription));
+        return subscriptionMapper.toDto(subscriptionRepository.save(newSubscription));
     }
 
     /// Creates user subscriptions in bulk. If the subscription isn't already in the system, this is added before the user is subscribed.
@@ -129,7 +115,7 @@ public class SubscriptionService {
     /// @param userId   the ID of the requesting user
     /// @return a response containing a bulk creation DTO
     @Transactional
-    public SubscriptionDTO.@NonNull BulkSubscriptionResponseDTO addSubscriptions(List<SubscriptionDTO.SubscriptionCreateDTO> requests, Long userId) {
+    public SubscriptionDTO.@NonNull BulkSubscriptionResponseDTO addSubscriptions(List<FeedDTO.NewFeedRequestDTO> requests, Long userId) {
         List<SubscriptionDTO.UserSubscriptionDTO> successes = new ArrayList<>();
         List<SubscriptionDTO.SubscriptionFailureDTO> failures = new ArrayList<>();
 
@@ -138,9 +124,9 @@ public class SubscriptionService {
         for (var subscriptionObject : requests) {
             try {
                 // Fetch or create the subscription object to subscribe the user to
-                final var subscriptionEntity = this.fetchOrCreateSubscription(subscriptionObject);
-                // If all is successful, persist the new UserSubscriptionEntity and add a UserSubscriptionDTO to the successes list
-                successes.add(persistUserSubscription(subscriptionEntity, userId));
+                final var feed = this.feedService.fetchOrCreateFeed(subscriptionObject);
+                // If all is successful, persist the new SubscriptionEntity and add a UserSubscriptionDTO to the successes list
+                successes.add(persistUserSubscription(feed, userId));
             } catch (IllegalArgumentException _) {
                 // If the UUID of the feed is invalid, add a new failure to the failures list
                 failures.add(new SubscriptionDTO.SubscriptionFailureDTO(subscriptionObject.uuid(), subscriptionObject.feedUrl(), "invalid UUID format"));
@@ -161,10 +147,10 @@ public class SubscriptionService {
     /// @return a response containing the updated subscription
     @Transactional
     public SubscriptionDTO.UserSubscriptionDTO unsubscribeUserFromFeed(UUID feedUUID, Long userId) {
-        final var userSubscriptionEntity = userSubscriptionRepository.findByUserIdAndSubscriptionUuid(userId, feedUUID)
+        final var userSubscriptionEntity = subscriptionRepository.findByUserIdAndFeedUuid(userId, feedUUID)
                 .orElseThrow(() -> new EntityNotFoundException("no subscription found"));
 
         userSubscriptionEntity.setUnsubscribedAt(Instant.now());
-        return userSubscriptionMapper.toDto(userSubscriptionRepository.save(userSubscriptionEntity));
+        return subscriptionMapper.toDto(subscriptionRepository.save(userSubscriptionEntity));
     }
 }

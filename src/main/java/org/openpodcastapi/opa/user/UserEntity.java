@@ -2,7 +2,7 @@ package org.openpodcastapi.opa.user;
 
 import jakarta.persistence.*;
 import org.openpodcastapi.opa.security.RefreshTokenEntity;
-import org.openpodcastapi.opa.subscription.UserSubscriptionEntity;
+import org.openpodcastapi.opa.subscription.SubscriptionEntity;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -38,7 +38,7 @@ public class UserEntity {
 
     /// A list of user subscriptions associated with the user
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
-    private Set<UserSubscriptionEntity> subscriptions;
+    private Set<SubscriptionEntity> subscriptions;
 
     /// A list of refresh tokens associated with the user
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
@@ -156,14 +156,14 @@ public class UserEntity {
     /// Retrieves a user's subscriptions
     ///
     /// @return a set of subscriptions
-    public Set<UserSubscriptionEntity> getSubscriptions() {
+    public Set<SubscriptionEntity> getSubscriptions() {
         return this.subscriptions;
     }
 
     /// Sets a user's subscriptions
     ///
     /// @param subscriptions the set of subscriptions to add to the user
-    public void setSubscriptions(Set<UserSubscriptionEntity> subscriptions) {
+    public void setSubscriptions(Set<SubscriptionEntity> subscriptions) {
         this.subscriptions = subscriptions;
     }
 

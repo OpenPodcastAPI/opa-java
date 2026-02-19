@@ -2,9 +2,9 @@ package org.openpodcastapi.opa.subscriptions;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openpodcastapi.opa.feed.FeedDTO;
+import org.openpodcastapi.opa.feed.FeedRepository;
 import org.openpodcastapi.opa.security.TokenService;
-import org.openpodcastapi.opa.subscription.SubscriptionDTO;
-import org.openpodcastapi.opa.subscription.SubscriptionRepository;
 import org.openpodcastapi.opa.subscription.SubscriptionService;
 import org.openpodcastapi.opa.user.UserDTO;
 import org.openpodcastapi.opa.user.UserEntity;
@@ -59,7 +59,7 @@ class SubscriptionRestControllerTest {
     private SubscriptionService subscriptionService;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private FeedRepository feedRepository;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
@@ -69,7 +69,7 @@ class SubscriptionRestControllerTest {
     @BeforeEach
     void setup() {
         userRepository.deleteAll();
-        subscriptionRepository.deleteAll();
+        feedRepository.deleteAll();
         final var mockUserDetails = new UserDTO.CreateUserDTO("user", "testPassword", "test@test.test");
         final var convertedUser = userMapper.toEntity(mockUserDetails);
         convertedUser.setUuid(UUID.randomUUID());
@@ -92,8 +92,8 @@ class SubscriptionRestControllerTest {
         final var uuid1 = UUID.randomUUID();
         final var uuid2 = UUID.randomUUID();
 
-        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
-        final var sub2DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid2.toString(), "test.com/feed2");
+        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(uuid1.toString(), "test.com/feed1");
+        final var sub2DTO = new FeedDTO.NewFeedRequestDTO(uuid2.toString(), "test.com/feed2");
 
         subscriptionService.addSubscriptions(List.of(sub1DTO, sub2DTO), mockUser.getId());
 
@@ -114,7 +114,7 @@ class SubscriptionRestControllerTest {
                                 parameterWithName("size").description("The number of results to include on each page").optional(),
                                 parameterWithName("includeUnsubscribed")
                                         .optional()
-                                        .description("If true, includes unsubscribed feeds in the results. Defaults to false.")
+                                        .description("If true, includes unsubscribed feed in the results. Defaults to false.")
                         ),
                         responseFields(
                                 fieldWithPath("subscriptions[].uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
@@ -140,8 +140,8 @@ class SubscriptionRestControllerTest {
         final var uuid1 = UUID.randomUUID();
         final var uuid2 = UUID.randomUUID();
 
-        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
-        final var sub2DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid2.toString(), "test.com/feed2");
+        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(uuid1.toString(), "test.com/feed1");
+        final var sub2DTO = new FeedDTO.NewFeedRequestDTO(uuid2.toString(), "test.com/feed2");
 
         subscriptionService.addSubscriptions(List.of(sub1DTO, sub2DTO), mockUser.getId());
 
@@ -179,7 +179,7 @@ class SubscriptionRestControllerTest {
 
         final var uuid1 = UUID.randomUUID();
 
-        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
+        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(uuid1.toString(), "test.com/feed1");
 
         subscriptionService.addSubscriptions(List.of(sub1DTO), mockUser.getId());
 
@@ -229,8 +229,8 @@ class SubscriptionRestControllerTest {
         final var uuid1 = UUID.randomUUID();
         final var BAD_UUID = "62ad30ce-aac0-4f0a-a811";
 
-        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(uuid1.toString(), "test.com/feed1");
-        final var sub2DTO = new SubscriptionDTO.SubscriptionCreateDTO(BAD_UUID, "test.com/feed1");
+        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(uuid1.toString(), "test.com/feed1");
+        final var sub2DTO = new FeedDTO.NewFeedRequestDTO(BAD_UUID, "test.com/feed1");
 
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -266,7 +266,7 @@ class SubscriptionRestControllerTest {
     void createUserSubscription_shouldReturnSuccess() throws Exception {
         final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        final var dto = new SubscriptionDTO.SubscriptionCreateDTO(UUID.randomUUID().toString(), "test.com/feed1");
+        final var dto = new FeedDTO.NewFeedRequestDTO(UUID.randomUUID().toString(), "test.com/feed1");
 
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -297,7 +297,7 @@ class SubscriptionRestControllerTest {
     void createUserSubscription_shouldReturnFailure() throws Exception {
         final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        final var dto = new SubscriptionDTO.SubscriptionCreateDTO("62ad30ce-aac0-4f0a-a811", "test.com/feed2");
+        final var dto = new FeedDTO.NewFeedRequestDTO("62ad30ce-aac0-4f0a-a811", "test.com/feed2");
 
         mockMvc.perform(post("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
@@ -341,7 +341,7 @@ class SubscriptionRestControllerTest {
         final var accessToken = tokenService.generateAccessToken(mockUser);
 
         final var subscriptionUuid = UUID.randomUUID();
-        final var sub1DTO = new SubscriptionDTO.SubscriptionCreateDTO(subscriptionUuid.toString(), "test.com/feed1");
+        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(subscriptionUuid.toString(), "test.com/feed1");
 
         subscriptionService.addSubscriptions(List.of(sub1DTO), mockUser.getId());
 

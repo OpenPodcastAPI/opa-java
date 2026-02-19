@@ -2,6 +2,7 @@ package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.jspecify.annotations.NonNull;
+import org.openpodcastapi.opa.feed.FeedDTO;
 import org.openpodcastapi.opa.service.CustomUserDetails;
 import org.slf4j.Logger;
 import org.springframework.data.domain.Page;
@@ -35,7 +36,7 @@ public class SubscriptionRestController {
     ///
     /// @param user                the custom user details of the authenticated user
     /// @param pageable            the pagination options
-    /// @param includeUnsubscribed whether to include unsubscribed feeds in the response
+    /// @param includeUnsubscribed whether to include unsubscribed feed in the response
     /// @return a response containing subscription objects
     @GetMapping
     @PreAuthorize("hasRole('USER')")
@@ -99,7 +100,7 @@ public class SubscriptionRestController {
     /// @return a response containing a bulk subscription DTO
     @PostMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<SubscriptionDTO.@NonNull BulkSubscriptionResponseDTO> createUserSubscriptions(@RequestBody List<SubscriptionDTO.SubscriptionCreateDTO> request, @AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<SubscriptionDTO.@NonNull BulkSubscriptionResponseDTO> createUserSubscriptions(@RequestBody List<FeedDTO.NewFeedRequestDTO> request, @AuthenticationPrincipal CustomUserDetails user) {
         final var response = service.addSubscriptions(request, user.id());
 
         if (response.success().isEmpty() && !response.failure().isEmpty()) {
