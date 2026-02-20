@@ -90,106 +90,76 @@ public class UserEntity {
         this.updatedAt = updatedAt;
     }
 
-    /// Retrieves the ID of a user entity
-    ///
     /// @return the ID of the user entity
     public Long getId() {
         return this.id;
     }
 
-    /// Retrieves the UUID of a user entity
-    ///
     /// @return the UUID of the user entity
     public UUID getUuid() {
         return this.uuid;
     }
 
-    /// Sets the UUID of a user entity
-    ///
     /// @param uuid the UUID for the entity
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
 
-    /// Retrieves the username of a user entity
-    ///
     /// @return a user's username
     public String getUsername() {
         return this.username;
     }
 
-    /// Sets the username of a user entity
-    ///
     /// @param username the user's username
     public void setUsername(String username) {
         this.username = username;
     }
 
-    /// Retrieves the user's password hash
-    ///
     /// @return the hashed password
     public String getPassword() {
         return this.password;
     }
 
-    /// Sets the user's password. The password must be hashed first
-    ///
     /// @param password the hashed password
     public void setPassword(String password) {
         this.password = password;
     }
 
-    /// Retrieves a user's email address
-    ///
     /// @return the user's email address
     public String getEmail() {
         return this.email;
     }
 
-    /// Sets the user's email address.
-    ///
     /// @param email the user's email address
     public void setEmail(String email) {
         this.email = email;
     }
 
-    /// Retrieves a user's subscriptions
-    ///
     /// @return a set of subscriptions
     public Set<SubscriptionEntity> getSubscriptions() {
         return this.subscriptions;
     }
 
-    /// Sets a user's subscriptions
-    ///
     /// @param subscriptions the set of subscriptions to add to the user
     public void setSubscriptions(Set<SubscriptionEntity> subscriptions) {
         this.subscriptions = subscriptions;
     }
 
-    /// Retrieves a user's roles
-    ///
     /// @return a set of user roles
     public Set<UserRoles> getUserRoles() {
         return this.userRoles;
     }
 
-    /// Sets a user's roles
-    ///
     /// @param userRoles a set of user roles
     public void setUserRoles(Set<UserRoles> userRoles) {
         this.userRoles = userRoles;
     }
 
-    /// Retrieves the creation date of the user
-    ///
     /// @return the user creation date
     public Instant getCreatedAt() {
         return this.createdAt;
     }
 
-    /// Retrieves the last updated timestamp for the user
-    ///
     /// @return the last updated timestamp
     public Instant getUpdatedAt() {
         return this.updatedAt;
