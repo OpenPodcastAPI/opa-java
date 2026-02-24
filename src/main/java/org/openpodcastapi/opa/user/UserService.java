@@ -1,33 +1,39 @@
 package org.openpodcastapi.opa.user;
 
 import jakarta.persistence.EntityNotFoundException;
-import org.jspecify.annotations.NonNull;
+import org.openpodcastapi.opa.pagination.CursorPage;
+import org.openpodcastapi.opa.pagination.CursorRepository;
+import org.openpodcastapi.opa.pagination.CursorUtility;
 import org.slf4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 /// Service class for user-related actions
 @Service
 public class UserService {
     private static final String USER_NOT_FOUND = "User not found";
-    private static final Logger log = org.slf4j.LoggerFactory.getLogger(UserService.class);
+    private static final Logger log = getLogger(UserService.class);
+    private static final QUserEntity qUser = QUserEntity.userEntity;
     private final UserRepository repository;
+    private final CursorRepository cursorRepository;
     private final UserMapper mapper;
     private final BCryptPasswordEncoder passwordEncoder;
 
     /// Required-args constructor
     ///
-    /// @param repository      the user repository used for user interactions
-    /// @param mapper          the user mapper used to map user entities and DTOs
-    /// @param passwordEncoder the password encoder used to handle user passwords
-    public UserService(UserRepository repository, UserMapper mapper, BCryptPasswordEncoder passwordEncoder) {
+    /// @param repository       the user repository used for user interactions
+    /// @param cursorRepository the cursor repository used for paginated requests
+    /// @param mapper           the user mapper used to map user entities and DTOs
+    /// @param passwordEncoder  the password encoder used to handle user passwords
+    public UserService(UserRepository repository, CursorRepository cursorRepository, UserMapper mapper, BCryptPasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.cursorRepository = cursorRepository;
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
     }
@@ -55,18 +61,21 @@ public class UserService {
         return mapper.toDto(persistedUserEntity);
     }
 
-    /// Fetches a list of all users in the system.
-    /// Intended for use by admins only.
+    /// Fetches a cursor-paginated list of all users in the system
+    /// Intended for use by admins only
     ///
-    /// @param pageable the pagination options
-    /// @return a paginated list of user objects
-    @Transactional(readOnly = true)
-    public Page<UserDTO.@NonNull UserResponseDTO> getAllUsers(Pageable pageable) {
-        final var paginatedUserDTO = repository.findAll(pageable);
+    /// @param cursor the optional string cursor for offsetting results
+    /// @param limit  the number of results to return
+    /// @return a cursor page containing user DTOs
+    public CursorPage<UserDTO.UserResponseDTO> getAllUsers(String cursor, int limit) {
+        // Decode the cursor from the provided string
+        final var cursorPayload = cursor == null
+                ? null
+                : CursorUtility.decode(cursor);
 
-        log.debug("returning {} users", paginatedUserDTO.getTotalElements());
+        final var userPage = cursorRepository.findWithCursor(qUser, cursorPayload, limit, null, true);
 
-        return paginatedUserDTO.map(mapper::toDto);
+        return userPage.map(mapper::toDto);
     }
 
     /// Deletes a user from the database

@@ -85,8 +85,7 @@ class UserRestControllerTest {
         mockMvc.perform(get("/api/v1/users")
                         .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON)
-                        .param("page", "0")
-                        .param("size", "20"))
+                        .param("limit", "20"))
                 .andExpect(status().isOk()) // Expect 200 for admin role
                 .andDo(document("users-list",
                         preprocessRequest(prettyPrint()),
@@ -95,22 +94,16 @@ class UserRestControllerTest {
                                 headerWithName("Authorization").description("The access token used to authenticate the user")
                         ),
                         queryParameters(
-                                parameterWithName("page").description("The page number to fetch").optional(),
-                                parameterWithName("size").description("The number of results to include on each page").optional()
+                                parameterWithName("limit").description("The number of results to include on each page").optional()
                         ),
                         responseFields(
-                                fieldWithPath("users[].uuid").description("The userEntity's UUID").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].username").description("The userEntity's username").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].email").description("UserEntity email address").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].createdAt").description("The date at which the userEntity was created").type(JsonFieldType.STRING),
-                                fieldWithPath("users[].updatedAt").description("The date at which the userEntity was last updated").type(JsonFieldType.STRING),
-                                fieldWithPath("page").description("Current page number").type(JsonFieldType.NUMBER),
-                                fieldWithPath("size").description("Page size").type(JsonFieldType.NUMBER),
-                                fieldWithPath("totalElements").description("Total number of users").type(JsonFieldType.NUMBER),
-                                fieldWithPath("totalPages").description("Total number of pages").type(JsonFieldType.NUMBER),
-                                fieldWithPath("first").description("Whether this is the first page of results").type(JsonFieldType.BOOLEAN),
-                                fieldWithPath("last").description("Whether this is the last page of results").type(JsonFieldType.BOOLEAN),
-                                fieldWithPath("numberOfElements").description("The total number of results on the current page").type(JsonFieldType.NUMBER)
+                                fieldWithPath("data[].uuid").description("The userEntity's UUID").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].username").description("The userEntity's username").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].email").description("UserEntity email address").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].createdAt").description("The date at which the userEntity was created").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].updatedAt").description("The date at which the userEntity was last updated").type(JsonFieldType.STRING),
+                                fieldWithPath("prevCursor").description("The previous cursor").type(JsonFieldType.STRING).optional(),
+                                fieldWithPath("nextCursor").description("The next cursor").type(JsonFieldType.STRING).optional()
                         )
                 ));
     }
@@ -122,15 +115,13 @@ class UserRestControllerTest {
         mockMvc.perform(get("/api/v1/users")
                         .header("Authorization", "Bearer " + accessToken)
                         .accept(MediaType.APPLICATION_JSON)
-                        .param("page", "0")
-                        .param("size", "20"))
+                        .param("limit", "20"))
                 .andExpect(status().isForbidden())
                 .andDo(document("users-list-unsuccessful",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         queryParameters(
-                                parameterWithName("page").description("The page number to fetch").optional(),
-                                parameterWithName("size").description("The number of results to include on each page").optional()
+                                parameterWithName("limit").description("The number of results to include on each page").optional()
                         ),
                         responseFields(
                                 fieldWithPath("error").description("Error message").type(JsonFieldType.STRING),

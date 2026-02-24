@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import org.hibernate.validator.constraints.URL;
 import org.hibernate.validator.constraints.UUID;
-import org.jspecify.annotations.NonNull;
-import org.springframework.data.domain.Page;
 
 import java.time.Instant;
 import java.util.List;
@@ -50,43 +48,5 @@ public class SubscriptionDTO {
             @JsonProperty(value = "feedUrl", required = true) String feedUrl,
             @JsonProperty(value = "message", required = true) String message
     ) {
-    }
-
-    /// A paginated DTO representing a list of subscriptions
-    ///
-    /// @param subscriptions    the DTO list representing the subscriptions
-    /// @param first            whether this is the first page
-    /// @param last             whether this is the last page
-    /// @param page             the current page number
-    /// @param totalPages       the total number of pages in the result set
-    /// @param numberOfElements the number of elements in the current page
-    /// @param totalElements    the total number of elements in the result set
-    /// @param size             the size limit applied to the page
-    public record SubscriptionPageDTO(
-            List<UserSubscriptionDTO> subscriptions,
-            boolean first,
-            boolean last,
-            int page,
-            int totalPages,
-            long totalElements,
-            int numberOfElements,
-            int size
-    ) {
-        /// Returns a paginated response with details from a page of user subscriptions
-        ///
-        /// @param page the paginated list of DTO items
-        /// @return a subscription DTO with pagination details filled out
-        public static SubscriptionPageDTO fromPage(Page<@NonNull UserSubscriptionDTO> page) {
-            return new SubscriptionPageDTO(
-                    page.getContent(),
-                    page.isFirst(),
-                    page.isLast(),
-                    page.getNumber(),
-                    page.getTotalPages(),
-                    page.getTotalElements(),
-                    page.getNumberOfElements(),
-                    page.getSize()
-            );
-        }
     }
 }

@@ -2,6 +2,7 @@ package org.openpodcastapi.opa.subscription;
 
 import jakarta.persistence.*;
 import org.openpodcastapi.opa.feed.FeedEntity;
+import org.openpodcastapi.opa.pagination.Cursorable;
 import org.openpodcastapi.opa.user.UserEntity;
 
 import java.time.Instant;
@@ -9,8 +10,10 @@ import java.util.UUID;
 
 /// Entity representing the relationship between a user and a subscription
 @Entity
-@Table(name = "subscriptions")
-public class SubscriptionEntity {
+@Table(name = "subscriptions", indexes = {
+        @Index(name = "subscriptions_id_created_at", columnList = "user_id, createdAt DESC, id DESC")
+})
+public class SubscriptionEntity implements Cursorable {
     /// The entity ID
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
