@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -20,7 +20,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AdminUserInitializer implements ApplicationRunner {
     private static final Logger log = getLogger(AdminUserInitializer.class);
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder encoder;
+    private final Argon2PasswordEncoder encoder;
     @Value("${admin.username}")
     private String username;
     @Value("${admin.password}")
@@ -32,7 +32,7 @@ public class AdminUserInitializer implements ApplicationRunner {
     ///
     /// @param userRepository the user repository used for user interactions
     /// @param encoder        the password encoder used to encrypt the admin password
-    public AdminUserInitializer(UserRepository userRepository, BCryptPasswordEncoder encoder) {
+    public AdminUserInitializer(UserRepository userRepository, Argon2PasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.encoder = encoder;
     }

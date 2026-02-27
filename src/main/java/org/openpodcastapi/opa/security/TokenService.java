@@ -4,7 +4,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.openpodcastapi.opa.user.UserEntity;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class TokenService {
 
     private final RefreshTokenRepository repository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final Argon2PasswordEncoder passwordEncoder;
     // The secret string used to generate secret keys
     @Value("${jwt.secret}")
     private String secret;
@@ -35,7 +35,7 @@ public class TokenService {
     ///
     /// @param repository      the refresh token repository for token interaction
     /// @param passwordEncoder the password encoder for encoding tokens
-    public TokenService(RefreshTokenRepository repository, BCryptPasswordEncoder passwordEncoder) {
+    public TokenService(RefreshTokenRepository repository, Argon2PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
     }
