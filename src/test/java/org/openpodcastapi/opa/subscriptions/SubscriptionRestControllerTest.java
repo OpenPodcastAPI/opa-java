@@ -89,20 +89,23 @@ class SubscriptionRestControllerTest {
     void getAllSubscriptionsForUser_shouldReturnSubscriptions() throws Exception {
         final var accessToken = tokenService.generateAccessToken(mockUser);
 
-        final var uuid1 = UUID.randomUUID();
-        final var uuid2 = UUID.randomUUID();
+        final var uuid1 = UUID.randomUUID().toString();
+        final var uuid2 = UUID.randomUUID().toString();
+        final var uuid3 = UUID.randomUUID().toString();
+        final var uuid4 = UUID.randomUUID().toString();
 
-        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(uuid1.toString(), "test.com/feed1");
-        final var sub2DTO = new FeedDTO.NewFeedRequestDTO(uuid2.toString(), "test.com/feed2");
+        final var sub1DTO = new FeedDTO.NewFeedRequestDTO(uuid1, "test.com/feed1");
+        final var sub2DTO = new FeedDTO.NewFeedRequestDTO(uuid2, "test.com/feed2");
+        final var sub3DTO = new FeedDTO.NewFeedRequestDTO(uuid3, "test.com/feed3");
+        final var sub4DTO = new FeedDTO.NewFeedRequestDTO(uuid4, "test.com/feed4");
 
-        subscriptionService.addSubscriptions(List.of(sub1DTO, sub2DTO), mockUser.getId());
+        subscriptionService.addSubscriptions(List.of(sub1DTO, sub2DTO, sub3DTO, sub4DTO), mockUser.getId());
 
         mockMvc.perform(get("/api/v1/subscriptions")
                         .header("Authorization", "Bearer " + accessToken)
-                        .param("page", "0")
-                        .param("size", "20"))
+                        .param("limit", "2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.subscriptions.length()").value(2))
+                .andExpect(jsonPath("$.data.length()").value(2))
                 .andDo(document("subscriptions-list",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
@@ -111,24 +114,19 @@ class SubscriptionRestControllerTest {
                         ),
                         queryParameters(
                                 parameterWithName("page").description("The page number to fetch").optional(),
-                                parameterWithName("size").description("The number of results to include on each page").optional(),
+                                parameterWithName("limit").description("The number of results to include on each page").optional(),
                                 parameterWithName("includeUnsubscribed")
                                         .optional()
                                         .description("If true, includes unsubscribed feed in the results. Defaults to false.")
                         ),
                         responseFields(
-                                fieldWithPath("subscriptions[].uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].feedUrl").description("The feed URL of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].createdAt").description("Creation timestamp of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].updatedAt").description("Last update timestamp of the subscription").type(JsonFieldType.STRING),
-                                fieldWithPath("subscriptions[].unsubscribedAt").description("The date at which the user unsubscribed from the feed").type(JsonFieldType.STRING).optional(),
-                                fieldWithPath("page").description("Current page number").type(JsonFieldType.NUMBER),
-                                fieldWithPath("size").description("Size of the page").type(JsonFieldType.NUMBER),
-                                fieldWithPath("totalElements").description("Total number of subscriptions").type(JsonFieldType.NUMBER),
-                                fieldWithPath("totalPages").description("Total number of pages").type(JsonFieldType.NUMBER),
-                                fieldWithPath("first").description("Whether this is the first page").type(JsonFieldType.BOOLEAN),
-                                fieldWithPath("last").description("Whether this is the last page").type(JsonFieldType.BOOLEAN),
-                                fieldWithPath("numberOfElements").description("Number of subscriptions on the current page").type(JsonFieldType.NUMBER)
+                                fieldWithPath("data[].uuid").description("The UUID of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].feedUrl").description("The feed URL of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].createdAt").description("Creation timestamp of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].updatedAt").description("Last update timestamp of the subscription").type(JsonFieldType.STRING),
+                                fieldWithPath("data[].unsubscribedAt").description("The date at which the user unsubscribed from the feed").type(JsonFieldType.STRING).optional(),
+                                fieldWithPath("nextCursor").description("The cursor for the next page of results").type(JsonFieldType.STRING).optional(),
+                                fieldWithPath("prevCursor").description("The cursor for the previous page of results").type(JsonFieldType.STRING).optional()
                         )
                 ));
     }
@@ -159,8 +157,7 @@ class SubscriptionRestControllerTest {
     @Test
     void getSubscriptionByUuidForAnonymous_shouldReturnUnauthorized() throws Exception {
         mockMvc.perform(get("/api/v1/subscriptions/{uuid}", UUID.randomUUID())
-                        .param("page", "0")
-                        .param("size", "20"))
+                        .param("limit", "20"))
                 .andExpect(status().isUnauthorized());
     }
 

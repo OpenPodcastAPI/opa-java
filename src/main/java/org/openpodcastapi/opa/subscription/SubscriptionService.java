@@ -5,10 +5,11 @@ import org.jspecify.annotations.NonNull;
 import org.openpodcastapi.opa.feed.FeedDTO;
 import org.openpodcastapi.opa.feed.FeedEntity;
 import org.openpodcastapi.opa.feed.FeedService;
+import org.openpodcastapi.opa.pagination.CursorPage;
+import org.openpodcastapi.opa.pagination.CursorRepository;
+import org.openpodcastapi.opa.pagination.CursorUtility;
 import org.openpodcastapi.opa.user.UserRepository;
 import org.slf4j.Logger;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,22 +24,26 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Service
 public class SubscriptionService {
     private static final Logger log = getLogger(SubscriptionService.class);
+    private static final QSubscriptionEntity qSubscription = QSubscriptionEntity.subscriptionEntity;
     private final FeedService feedService;
     private final SubscriptionRepository subscriptionRepository;
-    private final SubscriptionMapper subscriptionMapper;
+    private final SubscriptionMapper mapper;
     private final UserRepository userRepository;
+    private final CursorRepository cursorRepository;
 
     /// All-args constructor
     ///
-    /// @param feedService                the repository used for feed interactions
+    /// @param feedService            the repository used for feed interactions
     /// @param subscriptionRepository the repository used for user subscription interactions
-    /// @param subscriptionMapper     the mapper used for mapping user subscription entities and DTOs
-    /// @param userRepository             the repository used for user interactions
-    public SubscriptionService(FeedService feedService, SubscriptionRepository subscriptionRepository, SubscriptionMapper subscriptionMapper, UserRepository userRepository) {
+    /// @param mapper                 the mapper used for mapping user subscription entities and DTOs
+    /// @param userRepository         the repository used for user interactions
+    /// @param cursorRepository       the cursor repository used for paginated requests
+    public SubscriptionService(FeedService feedService, SubscriptionRepository subscriptionRepository, SubscriptionMapper mapper, UserRepository userRepository, CursorRepository cursorRepository) {
         this.feedService = feedService;
         this.subscriptionRepository = subscriptionRepository;
-        this.subscriptionMapper = subscriptionMapper;
+        this.mapper = mapper;
         this.userRepository = userRepository;
+        this.cursorRepository = cursorRepository;
     }
 
     /// Fetches a single subscription for an authenticated userEntity, if it exists
@@ -54,34 +59,36 @@ public class SubscriptionService {
                 .orElseThrow(() -> new EntityNotFoundException("subscription not found for userEntity"));
 
         log.debug("Subscription {} for userEntity {} found", subscriptionUuid, userId);
-        return subscriptionMapper.toDto(userSubscription);
+        return mapper.toDto(userSubscription);
     }
 
-    /// Gets all subscriptions for the authenticated userEntity
+    /// Gets all subscriptions for the authenticated user
     ///
-    /// @param userId   the database ID of the authenticated userEntity
-    /// @param pageable the pagination options
+    /// @param userId              the database ID of the authenticated user
+    /// @param cursor              the encoded cursor
+    /// @param limit               the number of results to return
+    /// @param includeUnsubscribed whether to return unsubscribed results as well
     /// @return a paginated set of user subscriptions
     @Transactional(readOnly = true)
-    public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllSubscriptionsForUser(Long userId, Pageable pageable) {
+    public CursorPage<SubscriptionDTO.UserSubscriptionDTO> getAllSubscriptionsForUser(Long userId, String cursor, int limit, boolean includeUnsubscribed) {
         log.debug("Fetching subscriptions for {}", userId);
-        return subscriptionRepository
-                .findAllByUserId(userId, pageable)
-                .map(subscriptionMapper::toDto);
-    }
+        // Decode the cursor from the provided string
+        final var cursorPayload = cursor == null
+                ? null
+                : CursorUtility.decode(cursor);
 
-    /// Gets all active subscriptions for the authenticated user
-    ///
-    /// @param userId   the database ID of the authenticated user
-    /// @param pageable the pagination options
-    /// @return a paginated set of user subscriptions
-    @Transactional(readOnly = true)
-    public Page<SubscriptionDTO.@NonNull UserSubscriptionDTO> getAllActiveSubscriptionsForUser(Long userId, Pageable pageable) {
-        log.debug("Fetching all active subscriptions for {}", userId);
-        log.info("{}", userId);
-        var thing = subscriptionRepository.findAll();
-        thing.forEach(entity -> log.info("{}, {}", entity.getUser().getId(), entity.getUnsubscribedAt()));
-        return subscriptionRepository.findAllByUserIdAndUnsubscribedAtIsNull(userId, pageable).map(subscriptionMapper::toDto);
+        // Create a filter for the user ID
+        var filter = qSubscription.user.id.eq(userId);
+
+        // If the user hasn't requested unsubscribed records, only return those where the timestamp is null
+        if (!includeUnsubscribed) {
+            filter = filter.and(qSubscription.unsubscribedAt.isNull());
+        }
+
+        // Fetch and build the page
+        final var subscriptionPage = cursorRepository.findWithCursor(qSubscription, cursorPayload, limit, filter, true);
+
+        return subscriptionPage.map(mapper::toDto);
     }
 
     /// Persists a new user subscription to the database
@@ -106,7 +113,7 @@ public class SubscriptionService {
         });
 
         newSubscription.setUnsubscribedAt(null);
-        return subscriptionMapper.toDto(subscriptionRepository.save(newSubscription));
+        return mapper.toDto(subscriptionRepository.save(newSubscription));
     }
 
     /// Creates user subscriptions in bulk. If the subscription isn't already in the system, this is added before the user is subscribed.
@@ -151,6 +158,6 @@ public class SubscriptionService {
                 .orElseThrow(() -> new EntityNotFoundException("no subscription found"));
 
         userSubscriptionEntity.setUnsubscribedAt(Instant.now());
-        return subscriptionMapper.toDto(subscriptionRepository.save(userSubscriptionEntity));
+        return mapper.toDto(subscriptionRepository.save(userSubscriptionEntity));
     }
 }

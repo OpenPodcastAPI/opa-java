@@ -3,6 +3,7 @@ package org.openpodcastapi.opa.user;
 import jakarta.persistence.*;
 import org.openpodcastapi.opa.security.RefreshTokenEntity;
 import org.openpodcastapi.opa.subscription.SubscriptionEntity;
+import org.openpodcastapi.opa.pagination.Cursorable;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -12,8 +13,10 @@ import java.util.UUID;
 
 /// An entity representing a user
 @Entity
-@Table(name = "users")
-public class UserEntity {
+@Table(name = "users", indexes = {
+        @Index(name = "user_id_created_at", columnList = "createdAt DESC, id DESC")
+})
+public class UserEntity implements Cursorable {
 
     /// The user ID
     @Id
