@@ -6,7 +6,7 @@ import org.openpodcastapi.opa.pagination.CursorRepository;
 import org.openpodcastapi.opa.pagination.CursorUtility;
 import org.slf4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +23,7 @@ public class UserService {
     private final UserRepository repository;
     private final CursorRepository cursorRepository;
     private final UserMapper mapper;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final Argon2PasswordEncoder passwordEncoder;
 
     /// Required-args constructor
     ///
@@ -31,7 +31,7 @@ public class UserService {
     /// @param cursorRepository the cursor repository used for paginated requests
     /// @param mapper           the user mapper used to map user entities and DTOs
     /// @param passwordEncoder  the password encoder used to handle user passwords
-    public UserService(UserRepository repository, CursorRepository cursorRepository, UserMapper mapper, BCryptPasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, CursorRepository cursorRepository, UserMapper mapper, Argon2PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.cursorRepository = cursorRepository;
         this.mapper = mapper;
